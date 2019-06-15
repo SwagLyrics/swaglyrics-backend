@@ -3,6 +3,9 @@ import re
 import os
 import requests
 import git
+import hmac
+import hashlib
+import json
 from requests.auth import HTTPBasicAuth
 from flask import Flask, request, abort
 from unidecode import unidecode
@@ -14,6 +17,8 @@ username = os.environ['USERNAME']
 gh_token = os.environ['GH_TOKEN']
 genius_token = os.environ['GENIUS']
 passwd = os.environ['PASSWD']
+w_secret = os.environ['WEBHOOK_SECRET']
+
 token = ''
 t_expiry = 0
 
@@ -64,6 +69,7 @@ def update_token():
     print('updated token', token)
 
 update_token()
+
 
 def genius_stripper(song, artist):
     url = 'https://api.genius.com/search'
@@ -158,6 +164,15 @@ def check_song(song, artist):
     else:
         print('{song} and {artist} don\'t seem legit.'.format(song=song, artist=artist))
     return False
+
+
+def is_valid_signature(x_hub_signature, data, private_key):
+    hash_algorithm, github_signature = x_hub_signature.split('=', 1)
+    algorithm = hashlib.__dict__.get(hash_algorithm)
+    encoded_key = bytes(private_key, 'latin-1')
+    mac = hmac.new(encoded_key, msg=data, digestmod=algorithm)
+    return hmac.compare_digest(mac.hexdigest(), github_signature)
+
 
 
 @app.route('/unsupported', methods=['POST'])
@@ -257,15 +272,47 @@ def delete_line():
 
 @app.route('/update_server', methods=['POST'])
 def webhook():
-    if request.method == 'POST':
+    if request.method != 'POST':
+        return 'OK'
+    else:
+        abort_code = 418
+
+        event = request.headers.get('X-GitHub-Event')
+        if event == "ping":
+            return json.dumps({'msg': 'Hi!'})
+        if event != "push":
+            return json.dumps({'msg': "Wrong event type"})
+
+        x_hub_signature = request.headers.get('X-Hub-Signature')
+        if not is_valid_signature(x_hub_signature, request.data, w_secret):
+            print('Deploy signature failed: {sig}'.format(sig=x_hub_signature))
+            abort(abort_code)
+
+        payload = request.get_json()
+        if payload is None:
+            print('Deploy payload is empty: {payload}'.format(
+                payload=payload))
+            abort(abort_code)
+
+        if payload['ref'] != 'refs/heads/master':
+            return json.dumps({'msg': 'Not master; ignoring'})
+
         repo = git.Repo('/var/www/sites/mysite')
         origin = repo.remotes.origin
-        repo.create_head('master',
-    origin.refs.master).set_tracking_branch(origin.refs.master).checkout()
-        origin.pull()
-        return '', 200
-    else:
-        return '', 400
+        repo.create_head('master', origin.refs.master).set_tracking_branch(
+            origin.refs.master).checkout()
+
+        pull_info = origin.pull()
+
+        if len(pull_info) == 0:
+            return json.dumps({'msg': "Didn't pull any information from remote!"})
+        if pull_info[0].flags > 128:
+            return json.dumps({'msg': "Didn't pull any information from remote!"})
+
+        commit_hash = pull_info[0].commit.hexsha
+        build_commit = 'build_commit = "{commit}"'.format(commit=commit_hash)
+        print('build commit: {commit}'.format(commit=build_commit))
+        return json.dumps({'msg': 'Updated PythonAnywhere server to commit {commit}'.format(commit=commit_hash)})
 
 
 @app.route('/version')
