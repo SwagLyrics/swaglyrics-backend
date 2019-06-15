@@ -2,6 +2,7 @@ import time
 import re
 import os
 import requests
+import git
 from requests.auth import HTTPBasicAuth
 from flask import Flask, request, abort
 from unidecode import unidecode
@@ -252,6 +253,19 @@ def delete_line():
                 continue
             f.write(line)
     return f"Removed {cnt} instances of {song} by {artist} from unsupported.txt successfully."
+
+
+@app.route('/update_server', methods=['POST'])
+def webhook():
+    if request.method == 'POST':
+        repo = git.Repo('/var/www/sites/mysite')
+        origin = repo.remotes.origin
+        repo.create_head('master',
+    origin.refs.master).set_tracking_branch(origin.refs.master).checkout()
+        origin.pull()
+        return '', 200
+    else:
+        return '', 400
 
 
 @app.route('/version')
