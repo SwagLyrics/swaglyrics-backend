@@ -23,7 +23,7 @@ token = ''
 t_expiry = 0
 
 alg = re.compile(r'[^ a-zA-Z0-9]+')
-gstr = re.compile(r'(?<=\/)[-a-zA-Z]+(?=-lyrics$)')
+gstr = re.compile(r'(?<=/)[-a-zA-Z]+(?=-lyrics$)')
 brc = re.compile(r'([(\[]feat[^)\]]*[)\]]|- .*)', re.I)  # matches braces with feat included or text after -
 aln = re.compile(r'[^ \-a-zA-Z0-9]+')  # matches non space or - or alphanumeric characters
 spc = re.compile(' *- *| +')  # matches one or more spaces
@@ -68,6 +68,7 @@ def update_token():
     t_expiry = time.time()
     print('updated token', token)
 
+
 update_token()
 
 
@@ -99,40 +100,30 @@ def genius_stripper(song, artist):
 
 
 def stripper(song, artist):
-	"""
-	Generate the url path given the song and artist to format the Genius URL with.
-	Strips the song and artist of special characters and unresolved text such as 'feat.' or text within braces.
-	Then concatenates both with hyphens replacing the blank spaces.
-	Eg.
-	>>>stripper('Paradise City', 'Guns n’ Roses')
-	Guns-n-Roses-Paradise-City
-	Which then formats the url to https://genius.com/Guns-n-Roses-Paradise-City-lyrics
-	:param song: currently playing song
-	:param artist: song artist
-	:return: formatted url path
-	"""
-	song = re.sub(brc, '', song).strip()  # remove braces and included text with feat and text after '- '
-	ft = wth.search(song)  # find supporting artists if any
-	if ft:
-		song = song.replace(ft.group(), '')  # remove (with supporting artists) from song
-		ar = ft.group(1)  # the supporting artist(s)
-		if '&' in ar:  # check if more than one supporting artist and add them to artist
-			artist += '-{ar}'.format(ar=ar)
-		else:
-			artist += '-and-{ar}'.format(ar=ar)
-	song_data = artist + '-' + song
-	# swap some special characters
-	url_data = song_data.replace('&', 'and')
-	url_data = url_data.replace('/', ' ')  # replace / with space to support more songs, needs testing
-	url_data = url_data.replace('é', 'e')
-	url_data = re.sub(aln, '', url_data)  # remove punctuation and other characters
-	url_data = re.sub(spc, '-', url_data)  # substitute one or more spaces to -
-	return url_data
+    song = re.sub(brc, '', song).strip()  # remove braces and included text with feat and text after '- '
+    ft = wth.search(song)  # find supporting artists if any
+    if ft:
+        song = song.replace(ft.group(), '')  # remove (with supporting artists) from song
+        ar = ft.group(1)  # the supporting artist(s)
+        if '&' in ar:  # check if more than one supporting artist and add them to artist
+            artist += '-{ar}'.format(ar=ar)
+        else:
+            artist += '-and-{ar}'.format(ar=ar)
+    song_data = artist + '-' + song
+    # swap some special characters
+    url_data = song_data.replace('&', 'and')
+    url_data = url_data.replace('/', ' ')  # replace / with space to support more songs, needs testing
+    url_data = url_data.replace('é', 'e')
+    url_data = re.sub(aln, '', url_data)  # remove punctuation and other characters
+    url_data = re.sub(spc, '-', url_data)  # substitute one or more spaces to -
+    return url_data
+
 
 def create_issue(song, artist, version, stripper='not supported yet'):
     json = {
         "title": "{song} by {artist} unsupported.".format(song=song, artist=artist),
-        "body": "Check if issue with swaglyrics or whether song lyrics unavailable on Genius. \n<hr>\n <tt><b>stripper -> {stripper}</b>\n\nversion -> {version}</tt>".format(stripper=stripper, version=version),
+        "body": "Check if issue with swaglyrics or whether song lyrics unavailable on Genius. \n<hr>\n <tt><b>"
+                "stripper -> {stripper}</b>\n\nversion -> {version}</tt>".format(stripper=stripper, version=version),
         "labels": ["unsupported song"]
     }
     r = requests.post('https://api.github.com/repos/SwagLyrics/swaglyrics-for-spotify/issues',
@@ -150,7 +141,8 @@ def check_song(song, artist):
     if t_expiry + 3600 - 300 < time.time():  # check if token expired ( - 300 to add buffer of 5 minutes)
         update_token()
     headers = {"Authorization": "Bearer {}".format(token)}
-    r = requests.get('https://api.spotify.com/v1/search', headers=headers, params={'q': '{song} {artist}'.format(song=song, artist=artist), 'type': 'track'})
+    r = requests.get('https://api.spotify.com/v1/search', headers=headers, params={'q': '{song} {artist}'.format(
+        song=song, artist=artist), 'type': 'track'})
     try:
         data = r.json()['tracks']['items']
     except KeyError:
@@ -172,7 +164,6 @@ def is_valid_signature(x_hub_signature, data, private_key):
     encoded_key = bytes(private_key, 'latin-1')
     mac = hmac.new(encoded_key, msg=data, digestmod=algorithm)
     return hmac.compare_digest(mac.hexdigest(), github_signature)
-
 
 
 @app.route('/unsupported', methods=['POST'])
@@ -200,20 +191,21 @@ def update():
             issue = create_issue(song, artist, version, stripped)
             if issue['status_code'] == 201:
                 print('Created issue on the GitHub repo for {song} by {artist}.'.format(song=song, artist=artist))
-                return 'Created issue on the GitHub repo for {song} by {artist}. \n{link}'.format(song=song, artist=artist, link=issue['link'])
+                return 'Created issue on the GitHub repo for {song} by {artist}. \n{link}'.format(
+                    song=song, artist=artist, link=issue['link'])
             else:
                 return 'Logged {song} by {artist} in the server.'.format(song=song, artist=artist)
 
-        return "That's a fishy request, that artist and song doesn't seem to exist on Spotify. \nIf you feel there's an error, open a " \
-                  "ticket at https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
-
+        return "That's a fishy request, that artist and song doesn't seem to exist on Spotify. \n" \
+               "If you feel there's an error, open a ticket at " \
+               "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
 
 
 @app.route("/stripper", methods=["GET", "POST"])
 def get_stripper():
     song = request.form['song']
     artist = request.form['artist']
-    lyrics = Lyrics.query.filter(Lyrics.song==song).filter(Lyrics.artist==artist).first()
+    lyrics = Lyrics.query.filter(Lyrics.song == song).filter(Lyrics.artist == artist).first()
     if lyrics:
         return lyrics.stripper
     g_stripper = genius_stripper(song, artist)
@@ -276,6 +268,20 @@ def webhook():
         return 'OK'
     else:
         abort_code = 418
+        # Do initial validations on required headers
+        if 'X-Github-Event' not in request.headers:
+            abort(abort_code)
+        if 'X-Github-Delivery' not in request.headers:
+            abort(abort_code)
+        if 'X-Hub-Signature' not in request.headers:
+            abort(abort_code)
+        if not request.is_json:
+            abort(abort_code)
+        if 'User-Agent' not in request.headers:
+            abort(abort_code)
+        ua = request.headers.get('User-Agent')
+        if not ua.startswith('GitHub-Hookshot/'):
+            abort(abort_code)
 
         event = request.headers.get('X-GitHub-Event')
         if event == "ping":
@@ -284,6 +290,8 @@ def webhook():
             return json.dumps({'msg': "Wrong event type"})
 
         x_hub_signature = request.headers.get('X-Hub-Signature')
+        # webhook content type should be application/json for request.data to have the payload
+        # request.data is empty in case of x-www-form-urlencoded
         if not is_valid_signature(x_hub_signature, request.data, w_secret):
             print('Deploy signature failed: {sig}'.format(sig=x_hub_signature))
             abort(abort_code)
@@ -310,9 +318,9 @@ def webhook():
             return json.dumps({'msg': "Didn't pull any information from remote!"})
 
         commit_hash = pull_info[0].commit.hexsha
-        build_commit = 'build_commit = "{commit}"'.format(commit=commit_hash)
-        print('build commit: {commit}'.format(commit=build_commit))
-        return json.dumps({'msg': 'Updated PythonAnywhere server to commit {commit}'.format(commit=commit_hash)})
+        build_commit = f'build_commit = "{commit_hash}"'
+        print(f'{build_commit}')
+        return 'Updated PythonAnywhere server to commit {commit}'.format(commit=commit_hash)
 
 
 @app.route('/version')
@@ -330,5 +338,4 @@ def hello():
 
 @app.route('/test')
 def swag():
-    return os.environ['BLAZEIT'] + os.environ['SWAG']
-
+    return os.environ['BLAZEIT']
