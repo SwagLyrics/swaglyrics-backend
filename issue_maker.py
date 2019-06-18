@@ -73,6 +73,7 @@ update_token()
 
 
 def genius_stripper(song, artist):
+    print(f'getting stripper from Genius for {song} by {artist}')
     url = 'https://api.genius.com/search'
     headers = {"Authorization": "Bearer {token}".format(token=genius_token)}
     params = {'q': '{song} {artist}'.format(song=song, artist=artist)}
@@ -86,7 +87,7 @@ def genius_stripper(song, artist):
             hits = data['response']['hits']
             for hit in hits:
                 full_title = hit['result']['full_title']
-                print(full_title)
+                print(f'full title: {full_title}')
                 for word in title.split():
                     if word.lower() not in full_title.lower():
                         print('broke on {word}'.format(word=word))
@@ -94,8 +95,9 @@ def genius_stripper(song, artist):
                 else:
                     path = gstr.search(hit['result']['path'])
                     stripper = path.group()
-                    print(stripper)
+                    print(f'stripper found: {stripper}')
                     return stripper
+            print('stripper not found')
             return None
 
 
@@ -213,6 +215,7 @@ def get_stripper():
         print('using genius_stripper: {}'.format(g_stripper))
         return g_stripper
     else:
+        print('did not find stripper to return :(')
         return "Stripper Not Found"
 
 
