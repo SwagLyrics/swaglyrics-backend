@@ -310,8 +310,6 @@ def webhook():
 
         repo = git.Repo('/var/www/sites/mysite')
         origin = repo.remotes.origin
-        repo.create_head('master', origin.refs.master).set_tracking_branch(
-            origin.refs.master).checkout()
 
         pull_info = origin.pull()
 
