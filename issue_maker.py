@@ -335,7 +335,7 @@ def issue_webhook():
         event = request.headers.get('X-GitHub-Event')
         if event == "ping":
             return json.dumps({'msg': 'Hi!'})
-        if event != "push":
+        if event != "issues":
             return json.dumps({'msg': "Wrong event type"})
 
         x_hub_signature = request.headers.get('X-Hub-Signature')
