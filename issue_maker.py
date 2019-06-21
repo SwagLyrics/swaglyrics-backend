@@ -7,6 +7,8 @@ import hmac
 import hashlib
 import json
 from requests.auth import HTTPBasicAuth
+from ipaddress import ip_address, ip_network
+from functools import wraps
 from flask import Flask, request, abort
 from unidecode import unidecode
 from flask_sqlalchemy import SQLAlchemy
@@ -15,22 +17,24 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 username = os.environ['USERNAME']
 gh_token = os.environ['GH_TOKEN']
-genius_token = os.environ['GENIUS']
 passwd = os.environ['PASSWD']
-w_secret = os.environ['WEBHOOK_SECRET']
 
 token = ''
 t_expiry = 0
 
+# genius stripper regex
 alg = re.compile(r'[^ a-zA-Z0-9]+')
 gstr = re.compile(r'(?<=/)[-a-zA-Z]+(?=-lyrics$)')
+# stripper regex
 brc = re.compile(r'([(\[]feat[^)\]]*[)\]]|- .*)', re.I)  # matches braces with feat included or text after -
 aln = re.compile(r'[^ \-a-zA-Z0-9]+')  # matches non space or - or alphanumeric characters
 spc = re.compile(' *- *| +')  # matches one or more spaces
 wth = re.compile(r'(?: *\(with )([^)]+)\)')  # capture text after with
+# webhook regex
+wdt = re.compile(r'(.+) by (.+) unsupported.')
 
-
-SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{username}.mysql.pythonanywhere-services.com/{username}${databasename}".format(
+SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{username}.mysql.pythonanywhere-services." \
+                          "com/{username}${databasename}".format(
     username=username,
     password=os.environ['DB_PWD'],
     databasename="strippers",
@@ -75,23 +79,31 @@ update_token()
 def genius_stripper(song, artist):
     print(f'getting stripper from Genius for {song} by {artist}')
     url = 'https://api.genius.com/search'
-    headers = {"Authorization": "Bearer {token}".format(token=genius_token)}
+    headers = {"Authorization": "Bearer {token}".format(token=os.environ['GENIUS'])}
     params = {'q': '{song} {artist}'.format(song=song, artist=artist)}
     r = requests.get(url, params=params, headers=headers)
-    title = '{song} {artist}'.format(song=song, artist=artist)
-    title = re.sub(alg, '', title)
-    print('stripped title: {title}'.format(title=title))
+    song = re.sub(alg, '', song)
+    artist = re.sub(alg, '', artist)
+    print(f'stripped title: {song} {artist}')
     if r.status_code == 200:
-        data =  r.json()
+        data = r.json()
         if data['meta']['status'] == 200:
             hits = data['response']['hits']
             for hit in hits:
                 full_title = hit['result']['full_title']
                 print(f'full title: {full_title}')
-                for word in title.split():
+                for word in artist.split():
                     if word.lower() not in full_title.lower():
                         print('broke on {word}'.format(word=word))
                         break
+                err_cnt = 0
+                # allow one word mismatch
+                for word in song.split():
+                    if word.lower() not in full_title.lower():
+                        print('broke on {word}'.format(word=word))
+                        err_cnt += 1
+                        if err_cnt > 1:
+                            break
                 else:
                     path = gstr.search(hit['result']['path'])
                     stripper = path.group()
@@ -148,7 +160,7 @@ def check_song(song, artist):
     try:
         data = r.json()['tracks']['items']
     except KeyError:
-        pass
+        return False
     if data:
         print(data[0]['artists'][0]['name'])
         print(data[0]['name'])
@@ -160,12 +172,71 @@ def check_song(song, artist):
     return False
 
 
-def is_valid_signature(x_hub_signature, data, private_key):
+def del_line(song, artist):
+    # delete song and artist from unsupported.txt
+    with open('unsupported.txt', 'r') as f:
+        lines = f.readlines()
+    with open('unsupported.txt', 'w') as f:
+        cnt = 0
+        for line in lines:
+            if line == "{song} by {artist}\n".format(song=song, artist=artist):
+                cnt += 1
+                continue
+            f.write(line)
+    # return number of lines deleted
+    return cnt
+
+
+def is_valid_signature(x_hub_signature, data, private_key=os.environ['WEBHOOK_SECRET']):
     hash_algorithm, github_signature = x_hub_signature.split('=', 1)
     algorithm = hashlib.__dict__.get(hash_algorithm)
     encoded_key = bytes(private_key, 'latin-1')
     mac = hmac.new(encoded_key, msg=data, digestmod=algorithm)
     return hmac.compare_digest(mac.hexdigest(), github_signature)
+
+
+def request_from_github(abort_code=418):
+    """Provide decorator to handle request from github on the webhook."""
+
+    def decorator(f):
+        """Decorate the function to check if a request is a GitHub hook request."""
+
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if request.method != 'POST':
+                return 'OK'
+            else:
+                # Do initial validations on required headers
+                if 'X-Github-Event' not in request.headers:
+                    abort(abort_code)
+                if 'X-Github-Delivery' not in request.headers:
+                    abort(abort_code)
+                if 'X-Hub-Signature' not in request.headers:
+                    abort(abort_code)
+                if not request.is_json:
+                    abort(abort_code)
+                if 'User-Agent' not in request.headers:
+                    abort(abort_code)
+                ua = request.headers.get('User-Agent')
+                if not ua.startswith('GitHub-Hookshot/'):
+                    abort(abort_code)
+
+                request_ip = ip_address(u'{0}'.format(request.remote_addr))
+                meta_json = requests.get('https://api.github.com/meta').json()
+                hook_blocks = meta_json['hooks']
+
+                # Check if the POST request is from GitHub
+                for block in hook_blocks:
+                    if ip_address(request_ip) in ip_network(block):
+                        break
+                else:
+                    print("Unauthorized attempt to deploy by IP {ip}".format(ip=request_ip))
+                    abort(abort_code)
+                return f(*args, **kwargs)
+
+        return decorated_function
+
+    return decorator
 
 
 @app.route('/unsupported', methods=['POST'])
@@ -230,13 +301,9 @@ def add_stripper():
     lyrics = Lyrics(song=song, artist=artist, stripper=stripper)
     db.session.add(lyrics)
     db.session.commit()
-    with open('unsupported.txt', 'r') as f:
-        lines = f.readlines()
-    with open('unsupported.txt', 'w') as f:
-        for line in lines:
-            if line != "{song} by {artist}\n".format(song=song, artist=artist):
-                f.write(line)
-    return "Added stripper for {song} by {artist} to server database successfully.".format(song=song, artist=artist)
+    cnt = del_line(song, artist)
+    return "Added stripper for {song} by {artist} to server database successfully, deleted {cnt} instances from " \
+           "unsupported.txt".format(song=song, artist=artist, cnt=cnt)
 
 
 @app.route("/master_unsupported", methods=["GET", "POST"])
@@ -253,38 +320,17 @@ def delete_line():
         abort(403)
     song = request.form['song']
     artist = request.form['artist']
-    with open('unsupported.txt', 'r') as f:
-        lines = f.readlines()
-    with open('unsupported.txt', 'w') as f:
-        cnt = 0
-        for line in lines:
-            if line == "{song} by {artist}\n".format(song=song, artist=artist):
-                cnt += 1
-                continue
-            f.write(line)
+    cnt = del_line(song, artist)
     return f"Removed {cnt} instances of {song} by {artist} from unsupported.txt successfully."
 
 
-@app.route('/update_server', methods=['POST'])
-def webhook():
+@app.route('/issue_closed', methods=['POST'])
+@request_from_github()
+def issue_webhook():
     if request.method != 'POST':
         return 'OK'
     else:
         abort_code = 418
-        # Do initial validations on required headers
-        if 'X-Github-Event' not in request.headers:
-            abort(abort_code)
-        if 'X-Github-Delivery' not in request.headers:
-            abort(abort_code)
-        if 'X-Hub-Signature' not in request.headers:
-            abort(abort_code)
-        if not request.is_json:
-            abort(abort_code)
-        if 'User-Agent' not in request.headers:
-            abort(abort_code)
-        ua = request.headers.get('User-Agent')
-        if not ua.startswith('GitHub-Hookshot/'):
-            abort(abort_code)
 
         event = request.headers.get('X-GitHub-Event')
         if event == "ping":
@@ -295,7 +341,47 @@ def webhook():
         x_hub_signature = request.headers.get('X-Hub-Signature')
         # webhook content type should be application/json for request.data to have the payload
         # request.data is empty in case of x-www-form-urlencoded
-        if not is_valid_signature(x_hub_signature, request.data, w_secret):
+        if not is_valid_signature(x_hub_signature, request.data):
+            print('Deploy signature failed: {sig}'.format(sig=x_hub_signature))
+            abort(abort_code)
+
+        payload = request.get_json()
+        if payload is None:
+            print('Deploy payload is empty: {payload}'.format(
+                payload=payload))
+            abort(abort_code)
+
+        if payload['action'] in {'closed', 'deleted'}:
+            # delete line from unsupported.txt if issue closed/deleted
+            title = payload['issue']['title']
+            print(title)
+            title = wdt.match(title)
+            song = title.group(1)
+            artist = title.group(2)
+            cnt = del_line(song, artist)
+            return f'Deleted {cnt} instances from unsupported.txt'
+
+        return 'Event type not issue closed/deleted'
+
+
+@app.route('/update_server', methods=['POST'])
+@request_from_github()
+def update_webhook():
+    if request.method != 'POST':
+        return 'OK'
+    else:
+        abort_code = 418
+
+        event = request.headers.get('X-GitHub-Event')
+        if event == "ping":
+            return json.dumps({'msg': 'Hi!'})
+        if event != "push":
+            return json.dumps({'msg': "Wrong event type"})
+
+        x_hub_signature = request.headers.get('X-Hub-Signature')
+        # webhook content type should be application/json for request.data to have the payload
+        # request.data is empty in case of x-www-form-urlencoded
+        if not is_valid_signature(x_hub_signature, request.data):
             print('Deploy signature failed: {sig}'.format(sig=x_hub_signature))
             abort(abort_code)
 
@@ -333,7 +419,7 @@ def version():
 def hello():
     with open('unsupported.txt', 'r') as f:
         data = f.read()
-    data = ('Unsupported Songs <br>------------------------ <br><br>' + data).replace('\n','<br>')
+    data = ('Unsupported Songs <br>------------------------ <br><br>' + data).replace('\n', '<br>')
     return data
 
 
