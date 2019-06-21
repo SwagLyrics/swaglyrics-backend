@@ -221,7 +221,7 @@ def request_from_github(abort_code=418):
                 if not ua.startswith('GitHub-Hookshot/'):
                     abort(abort_code)
 
-                request_ip = ip_address(u'{0}'.format(request.remote_addr))
+                request_ip = ip_address(u'{0}'.format(request.headers['X-Real-IP']))
                 meta_json = requests.get('https://api.github.com/meta').json()
                 hook_blocks = meta_json['hooks']
 
