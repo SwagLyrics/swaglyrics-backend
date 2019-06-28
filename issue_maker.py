@@ -70,7 +70,7 @@ def update_token():
         'grant_type': 'client_credentials'}, auth=HTTPBasicAuth(c_id, secret))
     token = r.json()['access_token']
     t_expiry = time.time()
-    print('updated token', token)
+    print('updated token', token[:41])
 
 
 update_token()
@@ -82,9 +82,10 @@ def genius_stripper(song, artist):
     headers = {"Authorization": "Bearer {token}".format(token=os.environ['GENIUS'])}
     params = {'q': '{song} {artist}'.format(song=song, artist=artist)}
     r = requests.get(url, params=params, headers=headers)
-    song = re.sub(alg, '', song)
-    artist = re.sub(alg, '', artist)
-    print(f'stripped title: {song} {artist}')
+    title = f'{song} {artist}'
+    title = re.sub(alg, '', title)
+    print(f'stripped title: {title}')
+
     if r.status_code == 200:
         data = r.json()
         if data['meta']['status'] == 200:
@@ -92,23 +93,23 @@ def genius_stripper(song, artist):
             for hit in hits:
                 full_title = hit['result']['full_title']
                 print(f'full title: {full_title}')
-                for word in artist.split():
-                    if word.lower() not in full_title.lower():
-                        print('broke on {word}'.format(word=word))
-                        break
+
                 err_cnt = 0
-                # allow one word mismatch
-                for word in song.split():
+                max_err = len(title) // 2
+                # allow half length mismatch
+
+                for word in title.split():
                     if word.lower() not in full_title.lower():
-                        print('broke on {word}'.format(word=word))
                         err_cnt += 1
-                        if err_cnt > 1:
+                        print(f'broke on {word}')
+                        if err_cnt > max_err:
                             break
                 else:
                     path = gstr.search(hit['result']['path'])
                     stripper = path.group()
                     print(f'stripper found: {stripper}')
                     return stripper
+
             print('stripper not found')
             return None
 
@@ -154,9 +155,9 @@ def check_song(song, artist):
     print('using token', token)
     if t_expiry + 3600 - 300 < time.time():  # check if token expired ( - 300 to add buffer of 5 minutes)
         update_token()
-    headers = {"Authorization": "Bearer {}".format(token)}
-    r = requests.get('https://api.spotify.com/v1/search', headers=headers, params={'q': '{song} {artist}'.format(
-        song=song, artist=artist), 'type': 'track'})
+    headers = {"Authorization": f"Bearer {token}"}
+    r = requests.get('https://api.spotify.com/v1/search', headers=headers, params={'q': f'{song} {artist}',
+                                                                                   'type': 'track'})
     try:
         data = r.json()['tracks']['items']
     except KeyError:
@@ -351,17 +352,17 @@ def issue_webhook():
                 payload=payload))
             abort(abort_code)
 
-        if payload['action'] in {'closed', 'deleted'}:
-            # delete line from unsupported.txt if issue closed/deleted
+        if payload['action'] == 'closed':
+            # delete line from unsupported.txt if issue closed
             title = payload['issue']['title']
-            print(title)
+            print(f'{title} is to be deleted.')
             title = wdt.match(title)
             song = title.group(1)
             artist = title.group(2)
             cnt = del_line(song, artist)
             return f'Deleted {cnt} instances from unsupported.txt'
 
-        return 'Event type not issue closed/deleted'
+        return 'Event type not issue closed'
 
 
 @app.route('/update_server', methods=['POST'])
