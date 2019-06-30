@@ -82,9 +82,10 @@ def genius_stripper(song, artist):
     headers = {"Authorization": "Bearer {token}".format(token=os.environ['GENIUS'])}
     params = {'q': '{song} {artist}'.format(song=song, artist=artist)}
     r = requests.get(url, params=params, headers=headers)
-    title = f'{song} {artist}'
-    title = re.sub(alg, '', title)
+    title = re.sub(alg, '', f'{song} {artist}')
     print(f'stripped title: {title}')
+
+    words = title.split()
 
     if r.status_code == 200:
         data = r.json()
@@ -95,10 +96,10 @@ def genius_stripper(song, artist):
                 print(f'full title: {full_title}')
 
                 err_cnt = 0
-                max_err = len(title) // 2
+                max_err = len(words) // 2
                 # allow half length mismatch
 
-                for word in title.split():
+                for word in words:
                     if word.lower() not in full_title.lower():
                         err_cnt += 1
                         print(f'broke on {word}')
@@ -152,7 +153,7 @@ def create_issue(song, artist, version, stripper='not supported yet'):
 
 def check_song(song, artist):
     global token, t_expiry
-    print('using token', token)
+    print('using token', token[:41])
     if t_expiry + 3600 - 300 < time.time():  # check if token expired ( - 300 to add buffer of 5 minutes)
         update_token()
     headers = {"Authorization": f"Bearer {token}"}
