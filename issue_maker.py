@@ -354,7 +354,7 @@ def issue_webhook():
             abort(abort_code)
 
         try:
-            label = payload['labels'][0]['name']
+            label = payload['issue']['labels'][0]['name']
             # should be unsupported song for our purposes
         except IndexError:
             return not_relevant
