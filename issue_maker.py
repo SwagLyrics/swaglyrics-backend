@@ -75,12 +75,13 @@ update_token()
 
 
 def genius_stripper(song, artist):
-    print(f'getting stripper from Genius for {song} by {artist}')
+    title = f'{song} by {artist}'
+    print(f'getting stripper from Genius for {title}')
     url = 'https://api.genius.com/search'
     headers = {"Authorization": "Bearer {token}".format(token=os.environ['GENIUS'])}
-    params = {'q': '{song} {artist}'.format(song=song, artist=artist)}
+    params = {'q': f'{title}'}
     r = requests.get(url, params=params, headers=headers)
-    title = re.sub(alg, '', f'{song} {artist}')
+    title = re.sub(alg, '', title)
     print(f'stripped title: {title}')
 
     words = title.split()
@@ -92,10 +93,13 @@ def genius_stripper(song, artist):
             for hit in hits:
                 full_title = hit['result']['full_title']
                 print(f'full title: {full_title}')
+                full_title = re.sub(alg, '', full_title)
+                print(f'stripped full title: {full_title}')
 
                 err_cnt = 0
                 max_err = len(words) // 2
                 # allow half length mismatch
+                print(f'max_err is set to {max_err}')
 
                 for word in words:
                     if word.lower() not in full_title.lower():
