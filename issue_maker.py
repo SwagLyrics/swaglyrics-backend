@@ -369,7 +369,7 @@ def issue_webhook():
             title = wdt.match(title)
             song = title.group(1)
             artist = title.group(2)
-            print(f'{title} is to be deleted.')
+            print(f'{song} by {artist} is to be deleted.')
             cnt = del_line(song, artist)
             return f'Deleted {cnt} instances from unsupported.txt'
 
