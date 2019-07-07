@@ -24,7 +24,7 @@ t_expiry = 0
 
 # genius stripper regex
 alg = re.compile(r'[^ a-zA-Z0-9]+')
-gstr = re.compile(r'(?<=/)[-a-zA-Z]+(?=-lyrics$)')
+gstr = re.compile(r'(?<=/)[-a-zA-Z0-9]+(?=-lyrics$)')
 # stripper regex
 brc = re.compile(r'([(\[]feat[^)\]]*[)\]]|- .*)', re.I)  # matches braces with feat included or text after -
 aln = re.compile(r'[^ \-a-zA-Z0-9]+')  # matches non space or - or alphanumeric characters
@@ -64,10 +64,8 @@ db.create_all()
 
 def update_token():
     global token, t_expiry
-    c_id = os.environ['C_ID']
-    secret = os.environ['SECRET']
     r = requests.post('https://accounts.spotify.com/api/token', data={
-        'grant_type': 'client_credentials'}, auth=HTTPBasicAuth(c_id, secret))
+        'grant_type': 'client_credentials'}, auth=HTTPBasicAuth(os.environ['C_ID'], os.environ['SECRET']))
     token = r.json()['access_token']
     t_expiry = time.time()
     print('updated token', token[:41])
@@ -334,6 +332,8 @@ def issue_webhook():
     else:
         abort_code = 418
 
+        not_relevant = "Event type not unsupported song issue closed."
+
         event = request.headers.get('X-GitHub-Event')
         if event == "ping":
             return json.dumps({'msg': 'Hi!'})
@@ -353,17 +353,23 @@ def issue_webhook():
                 payload=payload))
             abort(abort_code)
 
-        if payload['action'] == 'closed':
+        try:
+            label = payload['labels'][0]['name']
+            # should be unsupported song for our purposes
+        except IndexError:
+            return not_relevant
+
+        if payload['action'] == 'closed' and label == 'unsupported song':
             # delete line from unsupported.txt if issue closed
             title = payload['issue']['title']
-            print(f'{title} is to be deleted.')
             title = wdt.match(title)
             song = title.group(1)
             artist = title.group(2)
+            print(f'{title} is to be deleted.')
             cnt = del_line(song, artist)
             return f'Deleted {cnt} instances from unsupported.txt'
 
-        return 'Event type not issue closed'
+        return not_relevant
 
 
 @app.route('/update_server', methods=['POST'])
