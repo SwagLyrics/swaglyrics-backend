@@ -10,7 +10,8 @@ from requests.auth import HTTPBasicAuth
 from ipaddress import ip_address, ip_network
 from functools import wraps
 from flask import Flask, request, abort
-from unidecode import unidecode
+from swaglyrics.cli import stripper
+from swaglyrics import __version__ as version
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -25,20 +26,15 @@ t_expiry = 0
 # genius stripper regex
 alg = re.compile(r'[^ a-zA-Z0-9]+')
 gstr = re.compile(r'(?<=/)[-a-zA-Z0-9]+(?=-lyrics$)')
-# stripper regex
-brc = re.compile(r'([(\[]feat[^)\]]*[)\]]|- .*)', re.I)  # matches braces with feat included or text after -
-aln = re.compile(r'[^ \-a-zA-Z0-9]+')  # matches non space or - or alphanumeric characters
-spc = re.compile(' *- *| +')  # matches one or more spaces
-wth = re.compile(r'(?: *\(with )([^)]+)\)')  # capture text after with
 # webhook regex
 wdt = re.compile(r'(.+) by (.+) unsupported.')
 
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{username}.mysql.pythonanywhere-services." \
                           "com/{username}${databasename}".format(
-    username=username,
-    password=os.environ['DB_PWD'],
-    databasename="strippers",
-)
+                                                                username=username,
+                                                                password=os.environ['DB_PWD'],
+                                                                databasename="strippers",
+                                                            )
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 280
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -115,26 +111,6 @@ def genius_stripper(song, artist):
 
             print('stripper not found')
             return None
-
-
-def stripper(song, artist):
-    song = re.sub(brc, '', song).strip()  # remove braces and included text with feat and text after '- '
-    ft = wth.search(song)  # find supporting artists if any
-    if ft:
-        song = song.replace(ft.group(), '')  # remove (with supporting artists) from song
-        ar = ft.group(1)  # the supporting artist(s)
-        if '&' in ar:  # check if more than one supporting artist and add them to artist
-            artist += '-{ar}'.format(ar=ar)
-        else:
-            artist += '-and-{ar}'.format(ar=ar)
-    song_data = artist + '-' + song
-    # swap some special characters
-    url_data = song_data.replace('&', 'and')
-    url_data = url_data.replace('/', ' ')  # replace / with space to support more songs, needs testing
-    url_data = url_data.replace('é', 'e')
-    url_data = re.sub(aln, '', url_data)  # remove punctuation and other characters
-    url_data = re.sub(spc, '-', url_data)  # substitute one or more spaces to -
-    return url_data
 
 
 def create_issue(song, artist, version, stripper='not supported yet'):
@@ -250,7 +226,7 @@ def update():
         artist = request.form['artist']
         try:
             version = request.form['version']
-        except:
+        except KeyError:
             return 'Please update SwagLyrics to the latest version to get the latest support :)'
         stripped = stripper(song, artist)
         print(song, artist, stripped)
@@ -423,8 +399,9 @@ def update_webhook():
 
 
 @app.route('/version')
-def version():
-    return '0.2.7'
+def latest_version():
+    # latest swaglyrics version
+    return version
 
 
 @app.route('/')
