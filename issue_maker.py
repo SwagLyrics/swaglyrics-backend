@@ -24,7 +24,7 @@ token = ''
 t_expiry = 0
 
 # genius stripper regex
-alg = re.compile(r'[^ a-zA-Z0-9]+')
+alg = re.compile(r'[^\sa-zA-Z0-9]+')
 gstr = re.compile(r'(?<=/)[-a-zA-Z0-9]+(?=-lyrics$)')
 # webhook regex
 wdt = re.compile(r'(.+) by (.+) unsupported.')
