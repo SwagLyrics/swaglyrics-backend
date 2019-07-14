@@ -41,6 +41,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
+# manually initialize the db for first run
+
 class Lyrics(db.Model):
     __tablename__ = "all_strippers"
 
@@ -53,9 +55,6 @@ class Lyrics(db.Model):
         self.song = song
         self.artist = artist
         self.stripper = stripper
-
-
-db.create_all()
 
 
 def update_token():
