@@ -20,6 +20,7 @@ username = os.environ['USERNAME']
 gh_token = os.environ['GH_TOKEN']
 passwd = os.environ['PASSWD']
 
+# declare the Spotify token and expiry time
 token = ''
 t_expiry = 0
 
@@ -41,7 +42,10 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
-# manually initialize the db for first run
+# you should manually initialize the db for first run
+# >>> from issue_maker import db
+# >>> db.create_all()
+
 
 class Lyrics(db.Model):
     __tablename__ = "all_strippers"
@@ -58,6 +62,10 @@ class Lyrics(db.Model):
 
 
 def update_token():
+    """
+    Update the global Spotify Access Token variable and expiry time.
+    :return:
+    """
     global token, t_expiry
     r = requests.post('https://accounts.spotify.com/api/token', data={
         'grant_type': 'client_credentials'}, auth=HTTPBasicAuth(os.environ['C_ID'], os.environ['SECRET']))
@@ -66,16 +74,27 @@ def update_token():
     print('updated token', token[:41])
 
 
+# initialize the Spotify token and expiry time
 update_token()
 
 
 def genius_stripper(song, artist):
+    """
+    Try to obtain a stripper via the Genius API, given song and artist.
+
+    The title passed to the function is compared to the title obtained from Genius to make sure it's a match.
+    At least half the words should match between the two, this is not very strict so as to reduce false negatives.
+    :param song: the song name
+    :param artist: the artist
+    :return: stripper
+    """
     title = f'{song} by {artist}'
     print(f'getting stripper from Genius for {title}')
     url = 'https://api.genius.com/search'
     headers = {"Authorization": "Bearer {token}".format(token=os.environ['GENIUS'])}
     params = {'q': f'{title}'}
     r = requests.get(url, params=params, headers=headers)
+    # remove punctuation before comparison
     title = re.sub(alg, '', title)
     print(f'stripped title: {title}')
 
@@ -88,6 +107,7 @@ def genius_stripper(song, artist):
             for hit in hits:
                 full_title = hit['result']['full_title']
                 print(f'full title: {full_title}')
+                # remove punctuation before comparison
                 full_title = re.sub(alg, '', full_title)
                 print(f'stripped full title: {full_title}')
 
@@ -103,6 +123,7 @@ def genius_stripper(song, artist):
                         if err_cnt > max_err:
                             break
                 else:
+                    # return stripper as no mismatch
                     path = gstr.search(hit['result']['path'])
                     stripper = path.group()
                     print(f'stripper found: {stripper}')
@@ -113,6 +134,14 @@ def genius_stripper(song, artist):
 
 
 def create_issue(song, artist, version, stripper='not supported yet'):
+    """
+    Create an issue on the SwagLyrics for Spotify repo when a song, artist pair is not supported.
+    :param song: the song name
+    :param artist: the artist
+    :param version: swaglyrics version of client
+    :param stripper: stripper generated from the client
+    :return: json response with the status code and link to issue
+    """
     json = {
         "title": "{song} by {artist} unsupported.".format(song=song, artist=artist),
         "body": "Check if issue with swaglyrics or whether song lyrics unavailable on Genius. \n<hr>\n <tt><b>"
@@ -129,6 +158,15 @@ def create_issue(song, artist, version, stripper='not supported yet'):
 
 
 def check_song(song, artist):
+    """
+    Check if song, artist pair exist on Spotify or not using the Spotify API.
+
+    This is done to verify if the data received is legit or not. An exact comparison is done since the data is
+    supposed to be from Spotify in the first place.
+    :param song: the song to check
+    :param artist: the artist of song
+    :return: Boolean depending if it was found on Spotify or not
+    """
     global token, t_expiry
     print('using token', token[:41])
     if t_expiry + 3600 - 300 < time.time():  # check if token expired ( - 300 to add buffer of 5 minutes)
