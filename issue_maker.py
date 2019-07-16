@@ -100,6 +100,10 @@ def genius_stripper(song, artist):
 
     words = title.split()
 
+    max_err = len(words) // 2
+    # allow half length mismatch
+    print(f'max_err is set to {max_err}')
+
     if r.status_code == 200:
         data = r.json()
         if data['meta']['status'] == 200:
@@ -112,9 +116,6 @@ def genius_stripper(song, artist):
                 print(f'stripped full title: {full_title}')
 
                 err_cnt = 0
-                max_err = len(words) // 2
-                # allow half length mismatch
-                print(f'max_err is set to {max_err}')
 
                 for word in words:
                     if word.lower() not in full_title.lower():
@@ -179,8 +180,7 @@ def check_song(song, artist):
     except KeyError:
         return False
     if data:
-        print(data[0]['artists'][0]['name'])
-        print(data[0]['name'])
+        print(data[0]['artists'][0]['name'], data[0]['name'])
         if data[0]['name'] == song and data[0]['artists'][0]['name'] == artist:
             print('{song} and {artist} legit on Spotify'.format(song=song, artist=artist))
             return True
@@ -281,7 +281,8 @@ def update():
             issue = create_issue(song, artist, version, stripped)
             if issue['status_code'] == 201:
                 print('Created issue on the GitHub repo for {song} by {artist}.'.format(song=song, artist=artist))
-                return 'Created issue on the GitHub repo for {song} by {artist}. \n{link}'.format(
+                return 'Lyrics for that song may not exist on Genius. Created issue on the GitHub repo for {song} by ' \
+                       '{artist} to investigate further. \n{link}'.format(
                     song=song, artist=artist, link=issue['link'])
             else:
                 return 'Logged {song} by {artist} in the server.'.format(song=song, artist=artist)
