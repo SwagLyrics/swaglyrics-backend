@@ -1,0 +1,5 @@
+Flask
+GitPython
+flask_sqlalchemy
+swaglyrics
+requests
