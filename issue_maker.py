@@ -126,9 +126,12 @@ def genius_stripper(song, artist):
                 else:
                     # return stripper as no mismatch
                     path = gstr.search(hit['result']['path'])
-                    stripper = path.group()
-                    print(f'stripper found: {stripper}')
-                    return stripper
+                    try:
+                        stripper = path.group()
+                        print(f'stripper found: {stripper}')
+                        return stripper
+                    except AttributeError:
+                        print(f'Path did not end in lyrics: {path}')
 
             print('stripper not found')
             return None
@@ -305,7 +308,7 @@ def get_stripper():
         return g_stripper
     else:
         print('did not find stripper to return :(')
-        return "Stripper Not Found"
+        return None
 
 
 @app.route("/add_stripper", methods=["GET", "POST"])
