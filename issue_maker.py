@@ -286,7 +286,7 @@ def update():
                 print('Created issue on the GitHub repo for {song} by {artist}.'.format(song=song, artist=artist))
                 return 'Lyrics for that song may not exist on Genius. Created issue on the GitHub repo for {song} by ' \
                        '{artist} to investigate further. \n{link}'.format(
-                    song=song, artist=artist, link=issue['link'])
+                        song=song, artist=artist, link=issue['link'])
             else:
                 return 'Logged {song} by {artist} in the server.'.format(song=song, artist=artist)
 
