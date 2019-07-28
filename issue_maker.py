@@ -308,7 +308,7 @@ def get_stripper():
         return g_stripper
     else:
         print('did not find stripper to return :(')
-        return None
+        return '', 404
 
 
 @app.route("/add_stripper", methods=["GET", "POST"])
