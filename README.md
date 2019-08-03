@@ -8,4 +8,11 @@ Works using the GitHub API and Flask.
 
 The [main program](https://github.com/SwagLyrics/SwagLyrics-For-Spotify/blob/fbe9428e3458e6cce1396133b84c229ccd974a9e/swaglyrics/cli.py#L57) is configured to send a POST request to the server.
 
-Need to document and add unit testing
+Need to document and add unit testing.
+
+### Rate Limits
+In order to prevent spam and/or abuse of endpoints, rate limiting has been set such that it wouldn't affect a normal 
+user.
+
+Since SwagLyrics checks for track change every 5 seconds, requests on endpoints `/stripper` and `/unsupported` are 
+allowed once per 5 seconds only.

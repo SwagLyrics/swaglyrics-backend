@@ -13,9 +13,16 @@ from flask import Flask, request, abort
 from swaglyrics.cli import stripper
 from swaglyrics import __version__ as version
 from flask_sqlalchemy import SQLAlchemy
-
+from flask_limiter import Limiter
+from flask_limiter.util import get_ipaddr
 
 app = Flask(__name__)
+limiter = Limiter(
+    app,
+    key_func=get_ipaddr,
+    default_limits=["1000 per day"]
+)
+
 username = os.environ['USERNAME']
 gh_token = os.environ['GH_TOKEN']
 passwd = os.environ['PASSWD']
@@ -260,6 +267,7 @@ def request_from_github(abort_code=418):
 
 
 @app.route('/unsupported', methods=['POST'])
+@limiter.limit("1/5seconds;20/day")
 def update():
     if request.method == 'POST':
         song = request.form['song']
@@ -296,6 +304,7 @@ def update():
 
 
 @app.route("/stripper", methods=["GET", "POST"])
+@limiter.limit("1/5seconds;60/hour;200/day")
 def get_stripper():
     song = request.form['song']
     artist = request.form['artist']
@@ -347,6 +356,7 @@ def delete_line():
 
 @app.route('/issue_closed', methods=['POST'])
 @request_from_github()
+@limiter.exempt
 def issue_webhook():
     if request.method != 'POST':
         return 'OK'
@@ -395,6 +405,7 @@ def issue_webhook():
 
 @app.route('/update_server', methods=['POST'])
 @request_from_github()
+@limiter.exempt
 def update_webhook():
     if request.method != 'POST':
         return 'OK'
@@ -446,13 +457,21 @@ def latest_version():
 
 
 @app.route('/')
+@limiter.exempt
 def hello():
     with open('unsupported.txt', 'r') as f:
         data = f.read()
-    data = ('Unsupported Songs <br>------------------------ <br><br>' + data).replace('\n', '<br>')
+    data = ('Repositories and stuff at https://github.com/SwagLyrics <br>Unsupported Songs <br>------------------------'
+            '<br><br>' + data).replace('\n', '<br>')
     return data
 
 
 @app.route('/test')
 def swag():
     return os.environ['SWAG']
+
+
+@app.route("/slow")
+@limiter.limit("1 per day")
+def slow():
+    return "24"
