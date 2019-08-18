@@ -99,7 +99,7 @@ def genius_stripper(song, artist):
     print(f'getting stripper from Genius for {title}')
     url = 'https://api.genius.com/search'
     headers = {"Authorization": "Bearer {token}".format(token=os.environ['GENIUS'])}
-    params = {'q': f'{title}'}
+    params = {'q': f'{song} {artist}'}
     r = requests.get(url, params=params, headers=headers)
     # remove punctuation before comparison
     title = re.sub(alg, '', title)
