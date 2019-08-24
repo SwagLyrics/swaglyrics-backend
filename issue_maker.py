@@ -11,7 +11,7 @@ from ipaddress import ip_address, ip_network
 from functools import wraps
 from flask import Flask, request, abort
 from swaglyrics.cli import stripper
-from swaglyrics import __version__ as version
+from swaglyrics import __version__
 from flask_sqlalchemy import SQLAlchemy
 from flask_limiter import Limiter
 from flask_limiter.util import get_ipaddr
@@ -272,12 +272,16 @@ def update():
     if request.method == 'POST':
         song = request.form['song']
         artist = request.form['artist']
+        stripped = stripper(song, artist)
+
         try:
             version = request.form['version']
         except KeyError:
-            return 'Please update SwagLyrics to the latest version to get the latest support :)'
-        stripped = stripper(song, artist)
-        print(song, artist, stripped)
+            return 'Please update SwagLyrics to the latest version to get better support :)'
+
+        print(song, artist, stripped, version)
+        if __version__ > version:
+            return 'Please update SwagLyrics to the latest version to get better support :)'
 
         with open('unsupported.txt', 'r') as f:
             data = f.read()
@@ -453,7 +457,7 @@ def update_webhook():
 @app.route('/version')
 def latest_version():
     # latest swaglyrics version
-    return version
+    return __version__
 
 
 @app.route('/')
@@ -461,8 +465,8 @@ def latest_version():
 def hello():
     with open('unsupported.txt', 'r') as f:
         data = f.read()
-    data = ('Repositories and stuff at https://github.com/SwagLyrics <br>Unsupported Songs <br>------------------------'
-            '<br><br>' + data).replace('\n', '<br>')
+    data = ('Repositories and stuff at https://github.com/SwagLyrics <br><br>Unsupported Songs <br>--------------------'
+            '----<br><br>' + data).replace('\n', '<br>')
     return data
 
 
