@@ -280,7 +280,7 @@ def update():
             return 'Please update SwagLyrics to the latest version to get better support :)'
 
         print(song, artist, stripped, version)
-        if __version__ > version:
+        if version < '1.0.0':
             return 'Please update SwagLyrics to the latest version to get better support :)'
 
         with open('unsupported.txt', 'r') as f:
