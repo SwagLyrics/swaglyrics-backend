@@ -1,8 +1,6 @@
 # swaglyrics-issue-maker
 Server side code to make an issue on the [main repo](https://github.com/SwagLyrics/SwagLyrics-For-Spotify) when the 
-program encounters a song it can't fetch lyrics for.
-
-This is hosted on [pythonanywhere](https://aadibajpai.pythonanywhere.com). 
+program encounters a song it can't fetch lyrics for. 
 
 Works using the GitHub API and Flask.
 
@@ -16,3 +14,8 @@ user.
 
 Since SwagLyrics checks for track change every 5 seconds, requests on endpoints `/stripper` and `/unsupported` are 
 allowed once per 5 seconds only.
+
+### Sponsors
+[![PythonAnywhere](https://www.pythonanywhere.com/static/anywhere/images/PA-logo-small.png)](https://www.pythonanywhere.com/)
+
+swaglyrics-backend is proudly sponsored by [PythonAnywhere](https://www.pythonanywhere.com/).
