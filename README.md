@@ -1,4 +1,4 @@
-# swaglyrics-issue-maker
+# swaglyrics-backend
 Server side code to make an issue on the [main repo](https://github.com/SwagLyrics/SwagLyrics-For-Spotify) when the 
 program encounters a song it can't fetch lyrics for. 
 
