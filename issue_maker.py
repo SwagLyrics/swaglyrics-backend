@@ -248,7 +248,11 @@ def request_from_github(abort_code=418):
                 if not ua.startswith('GitHub-Hookshot/'):
                     abort(abort_code)
 
-                request_ip = ip_address(u'{0}'.format(request.headers['X-Real-IP']))
+                if request.headers.get('CF-Connecting-IP'):
+                    # necessary if ip from cloudflare
+                    request_ip = ip_address(u'{0}'.format(request.headers.get('CF-Connecting-IP')))
+                else:
+                    request_ip = ip_address(u'{0}'.format(request.headers['X-Real-IP']))
                 meta_json = requests.get('https://api.github.com/meta').json()
                 hook_blocks = meta_json['hooks']
 
@@ -391,10 +395,12 @@ def issue_webhook():
         try:
             label = payload['issue']['labels'][0]['name']
             # should be unsupported song for our purposes
+            repo = payload['repository']['name']
+            # should be from the SwagLyrics for Spotify repo
         except IndexError:
             return not_relevant
 
-        if payload['action'] == 'closed' and label == 'unsupported song':
+        if payload['action'] == 'closed' and label == 'unsupported song' and repo == 'SwagLyrics-For-Spotify':
             # delete line from unsupported.txt if issue closed
             title = payload['issue']['title']
             title = wdt.match(title)

@@ -7,16 +7,13 @@
     <title>SwagLyrics API</title>
 </head>
 <body>
-<h2>Unsupported Songs - <a href ="https://github.com/SwagLyrics">SwagLyrics</a></h2>
+<h2><a href="https://github.com/SwagLyrics/swaglyrics-backend">SwagLyrics API</a></h2>
+<br>
+<h3>Unsupported Songs</h3>
 <div id="lyrics">
-    
-    {%for x in unsupported_songs%} 
-  
-    {{x}}<br>
-    
-    {%endfor%} 
-    
-    </div>
-
+    {% for song in unsupported_songs %}
+        {{ song }}<br>
+    {% endfor %}
+</div>
 </body>
 </html>

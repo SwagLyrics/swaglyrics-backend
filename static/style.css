@@ -1,6 +1,7 @@
-h2{
-    margin-top: 0;
-    font-size: 1.5em;
+:root {
+    --main-bg-dark: #202124;
+    --main-bg-light: #F5F5F5;
+    --accent-green: #1DE9B6;
 }
 
 #lyrics{
@@ -11,4 +12,8 @@ body{
     background-color: #212121;
     color: white;
     font-family: 'Consolas', monospace;
+}
+
+a:link, a:visited {
+    color: var(--accent-green);
 }
