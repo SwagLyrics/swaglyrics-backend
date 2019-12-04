@@ -470,7 +470,7 @@ def hello():
 
 @app.route('/test')
 def swag():
-    return os.environ['SWAG']
+    return os.environ['BLAZEIT']
 
 
 @app.route("/slow")
