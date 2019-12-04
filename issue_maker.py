@@ -9,7 +9,7 @@ import json
 from requests.auth import HTTPBasicAuth
 from ipaddress import ip_address, ip_network
 from functools import wraps
-from flask import Flask, request, abort
+from flask import Flask, request, abort, render_template
 from swaglyrics.cli import stripper
 from swaglyrics import __version__
 from flask_sqlalchemy import SQLAlchemy
