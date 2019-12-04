@@ -293,14 +293,17 @@ def update():
             with open('unsupported.txt', 'a') as f:
                 f.write('{song} by {artist}\n'.format(song=song, artist=artist))
 
-            issue = create_issue(song, artist, version, stripped)
-            if issue['status_code'] == 201:
-                print('Created issue on the GitHub repo for {song} by {artist}.'.format(song=song, artist=artist))
-                return 'Lyrics for that song may not exist on Genius. Created issue on the GitHub repo for {song} by ' \
-                       '{artist} to investigate further. \n{link}'.format(
-                        song=song, artist=artist, link=issue['link'])
+            if re.fullmatch(r'[A-Z|a-z|\s]+', song) and re.fullmatch(r'[A-Z|a-z|\s]+', artist):
+                return 'Lyrics of {song} by {artist} may not exist on Genius.'.format(song=song, artist=artist)
             else:
-                return 'Logged {song} by {artist} in the server.'.format(song=song, artist=artist)
+                issue = create_issue(song, artist, version, stripped)
+                if issue['status_code'] == 201:
+                    print('Created issue on the GitHub repo for {song} by {artist}.'.format(song=song, artist=artist))
+                    return 'Lyrics for that song may not exist on Genius. Created issue on the GitHub repo for {song} by ' \
+                           '{artist} to investigate further. \n{link}'.format(
+                            song=song, artist=artist, link=issue['link'])
+                else:
+                    return 'Logged {song} by {artist} in the server.'.format(song=song, artist=artist)
 
         return "That's a fishy request, that artist and song doesn't seem to exist on Spotify. \n" \
                "If you feel there's an error, open a ticket at " \
