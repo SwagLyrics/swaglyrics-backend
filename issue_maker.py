@@ -464,10 +464,8 @@ def latest_version():
 @limiter.exempt
 def hello():
     with open('unsupported.txt', 'r') as f:
-        data = f.read()
-    data = ('Repositories and stuff at https://github.com/SwagLyrics <br><br>Unsupported Songs <br>--------------------'
-            '----<br><br>' + data).replace('\n', '<br>')
-    return data
+        data = f.readlines()
+    return render_template('hello.html', unsupported_songs=data)
 
 
 @app.route('/test')

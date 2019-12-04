@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel='shortcut icon' type='image/x-icon' href='../static/favicon.ico'/>
+    <link rel = "stylesheet" type = "text/css" href = "{{url_for('static', filename='style.css')}}">
+    <title>SwagLyrics API</title>
+</head>
+<body>
+<h2>Unsupported Songs - <a href ="https://github.com/SwagLyrics">SwagLyrics</a></h2>
+<div id="lyrics">
+{{line}}<br>
+    
+    {%for x in unsupported_songs} 
+  
+    {{x}}<br>
+    
+    {%endfor%} 
+    
+    </div>
+
+</body>
+</html>
