@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <link rel='shortcut icon' type='image/x-icon' href='../static/favicon.ico'/>
     <link rel = "stylesheet" type = "text/css" href = "{{url_for('static', filename='style.css')}}">
-    <title>SwagLyrics API</title>
+    <title>SwagLyrics Backend</title>
 </head>
 <body>
-<h2><a href="https://github.com/SwagLyrics/swaglyrics-backend">SwagLyrics API</a></h2>
-<br>
+<h2><a href="https://github.com/SwagLyrics/swaglyrics-backend">SwagLyrics Backend</a></h2>
+<p>The SwagLyrics Backend and API is housed here. This content should be more descriptive.</p>
+<p>Proudly sponsored by <a href="https://pythonanywhere.com">PythonAnywhere.</a></p>
 <h3>Unsupported Songs</h3>
-<div id="lyrics">
+<div id="songs">
     {% for song in unsupported_songs %}
         {{ song }}<br>
     {% endfor %}

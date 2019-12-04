@@ -4,14 +4,13 @@
     --accent-green: #1DE9B6;
 }
 
-#lyrics{
-    font-size: 1em;
+#songs {
+    font-family: 'Consolas', monospace;
 }
 
 body{
     background-color: #212121;
     color: white;
-    font-family: 'Consolas', monospace;
 }
 
 a:link, a:visited {
