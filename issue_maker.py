@@ -36,6 +36,8 @@ alg = re.compile(r'[^\sa-zA-Z0-9]+')
 gstr = re.compile(r'(?<=/)[-a-zA-Z0-9]+(?=-lyrics$)')
 # webhook regex
 wdt = re.compile(r'(.+) by (.+) unsupported.')
+# artist and song regex
+asrg = re.compile(r'[A-Z|a-z|\s]+')
 
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{username}.mysql.pythonanywhere-services." \
                           "com/{username}${databasename}".format(
@@ -293,8 +295,10 @@ def update():
             with open('unsupported.txt', 'a') as f:
                 f.write('{song} by {artist}\n'.format(song=song, artist=artist))
 
-            if re.fullmatch(r'[A-Z|a-z|\s]+', song) and re.fullmatch(r'[A-Z|a-z|\s]+', artist):
-                return 'Lyrics of {song} by {artist} may not exist on Genius.'.format(song=song, artist=artist)
+            if re.fullmatch(asrg, song) and re.fullmatch(asrg, artist):
+                return "Lyrics of {song} by {artist} may not exist on Genius.\n" \
+                       "If you feel there's an error, open a ticket at" \
+                       "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues".format(song=song, artist=artist)
             else:
                 issue = create_issue(song, artist, version, stripped)
                 if issue['status_code'] == 201:
