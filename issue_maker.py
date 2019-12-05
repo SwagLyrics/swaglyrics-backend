@@ -37,7 +37,7 @@ gstr = re.compile(r'(?<=/)[-a-zA-Z0-9]+(?=-lyrics$)')
 # webhook regex
 wdt = re.compile(r'(.+) by (.+) unsupported.')
 # artist and song regex
-asrg = re.compile(r'[A-Z|a-z|\s]+')
+asrg = re.compile(r'[A-Za-z\s]+')
 
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{username}.mysql.pythonanywhere-services." \
                           "com/{username}${databasename}".format(
