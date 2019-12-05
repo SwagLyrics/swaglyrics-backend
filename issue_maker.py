@@ -156,9 +156,9 @@ def create_issue(song, artist, version, stripper='not supported yet'):
     :return: json response with the status code and link to issue
     """
     json = {
-        "title": "{song} by {artist} unsupported.".format(song=song, artist=artist),
+        "title": f"{song} by {artist} unsupported.",
         "body": "Check if issue with swaglyrics or whether song lyrics unavailable on Genius. \n<hr>\n <tt><b>"
-                "stripper -> {stripper}</b>\n\nversion -> {version}</tt>".format(stripper=stripper, version=version),
+                f"stripper -> {stripper}</b>\n\nversion -> {version}</tt>",
         "labels": ["unsupported song"]
     }
     r = requests.post('https://api.github.com/repos/SwagLyrics/swaglyrics-for-spotify/issues',
@@ -194,10 +194,10 @@ def check_song(song, artist):
     if data:
         print(data[0]['artists'][0]['name'], data[0]['name'])
         if data[0]['name'] == song and data[0]['artists'][0]['name'] == artist:
-            print('{song} and {artist} legit on Spotify'.format(song=song, artist=artist))
+            print(f'{song} and {artist} legit on Spotify')
             return True
     else:
-        print('{song} and {artist} don\'t seem legit.'.format(song=song, artist=artist))
+        print(f'{song} and {artist} don\'t seem legit.')
     return False
 
 
@@ -208,7 +208,7 @@ def del_line(song, artist):
     with open('unsupported.txt', 'w') as f:
         cnt = 0
         for line in lines:
-            if line == "{song} by {artist}\n".format(song=song, artist=artist):
+            if line == f"{song} by {artist}\n":
                 cnt += 1
                 continue
             f.write(line)
@@ -287,30 +287,28 @@ def update():
 
         with open('unsupported.txt', 'r') as f:
             data = f.read()
-        if '{song} by {artist}'.format(song=song, artist=artist) in data:
+        if f'{song} by {artist}' in data:
             return 'Issue already exists on the GitHub repo. \n' \
                   'https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues'
 
         if check_song(song, artist):
             with open('unsupported.txt', 'a') as f:
-                f.write('{song} by {artist}\n'.format(song=song, artist=artist))
+                f.write(f'{song} by {artist}\n')
 
             if re.fullmatch(asrg, song) and re.fullmatch(asrg, artist):
-                return "Lyrics of {song} by {artist} may not exist on Genius.\n" \
+                return f"Lyrics of {song} by {artist} may not exist on Genius.\n" \
                        "If you feel there's an error, open a ticket at" \
-                       "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues".format(
-                               song=song, artist=artist
-                        )
+                       "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
             else:
                 issue = create_issue(song, artist, version, stripped)
                 if issue['status_code'] == 201:
-                    print('Created issue on the GitHub repo for {song} by {artist}.'.format(song=song, artist=artist))
+                    print(f'Created issue on the GitHub repo for {song} by {artist}.')
                     return 'Lyrics for that song may not exist on Genius. ' \
-                            'Created issue on the GitHub repo for {song} by ' \
+                           f'Created issue on the GitHub repo for {song} by ' \
                            '{artist} to investigate further. \n{link}'.format(
-                            song=song, artist=artist, link=issue['link'])
+                           artist=artist, link=issue['link'])
                 else:
-                    return 'Logged {song} by {artist} in the server.'.format(song=song, artist=artist)
+                    return f'Logged {song} by {artist} in the server.'
 
         return "That's a fishy request, that artist and song doesn't seem to exist on Spotify. \n" \
                "If you feel there's an error, open a ticket at " \
@@ -346,8 +344,8 @@ def add_stripper():
     db.session.add(lyrics)
     db.session.commit()
     cnt = del_line(song, artist)
-    return "Added stripper for {song} by {artist} to server database successfully, deleted {cnt} instances from " \
-           "unsupported.txt".format(song=song, artist=artist, cnt=cnt)
+    return f"Added stripper for {song} by {artist} to server database successfully, deleted {cnt} instances from " \
+           "unsupported.txt"
 
 
 @app.route("/master_unsupported", methods=["GET", "POST"])
@@ -394,8 +392,7 @@ def issue_webhook():
 
         payload = request.get_json()
         if payload is None:
-            print('Deploy payload is empty: {payload}'.format(
-                payload=payload))
+            print(f'Deploy payload is empty: {payload}')
             abort(abort_code)
 
         try:
@@ -441,8 +438,7 @@ def update_webhook():
 
         payload = request.get_json()
         if payload is None:
-            print('Deploy payload is empty: {payload}'.format(
-                payload=payload))
+            print(f'Deploy payload is empty: {payload}')
             abort(abort_code)
 
         if payload['ref'] != 'refs/heads/master':
