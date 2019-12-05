@@ -17,7 +17,3 @@ body{
 a:link, a:visited {
     color: var(--accent-green);
 }
-
-#desc {
-    max-width: 600px;
-}
