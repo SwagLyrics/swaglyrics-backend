@@ -474,7 +474,7 @@ def latest_version():
 @app.route('/')
 @limiter.exempt
 def hello():
-    with open('unsupported.txt', 'r') as f:
+    with open('unsupported.txt', 'r', encoding="utf-8") as f:
         data = f.readlines()
     return render_template('hello.html', unsupported_songs=data)
 

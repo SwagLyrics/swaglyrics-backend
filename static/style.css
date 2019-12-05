@@ -1,5 +1,5 @@
 :root {
-    --main-bg-dark: #202124;
+    --main-bg-dark: #212121;
     --main-bg-light: #F5F5F5;
     --accent-green: #1DE9B6;
 }
@@ -9,11 +9,15 @@
 }
 
 body{
-    background-color: #212121;
+    background-color: var(--main-bg-dark);
     font-family: 'Consolas', monospace;
     color: white;
 }
 
 a:link, a:visited {
     color: var(--accent-green);
+}
+
+#desc {
+    max-width: 600px;
 }
