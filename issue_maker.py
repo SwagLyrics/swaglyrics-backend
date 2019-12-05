@@ -298,12 +298,15 @@ def update():
             if re.fullmatch(asrg, song) and re.fullmatch(asrg, artist):
                 return "Lyrics of {song} by {artist} may not exist on Genius.\n" \
                        "If you feel there's an error, open a ticket at" \
-                       "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues".format(song=song, artist=artist)
+                       "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues".format(
+                               song=song, artist=artist
+                        )
             else:
                 issue = create_issue(song, artist, version, stripped)
                 if issue['status_code'] == 201:
                     print('Created issue on the GitHub repo for {song} by {artist}.'.format(song=song, artist=artist))
-                    return 'Lyrics for that song may not exist on Genius. Created issue on the GitHub repo for {song} by ' \
+                    return 'Lyrics for that song may not exist on Genius. ' \
+                            'Created issue on the GitHub repo for {song} by ' \
                            '{artist} to investigate further. \n{link}'.format(
                             song=song, artist=artist, link=issue['link'])
                 else:
