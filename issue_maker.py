@@ -300,7 +300,7 @@ def update():
 
             if re.fullmatch(asrg, song) and re.fullmatch(asrg, artist):
                 return f"Lyrics of {song} by {artist} may not exist on Genius.\n" \
-                       "If you feel there's an error, open a ticket at" \
+                       "If you feel there's an error, open a ticket at " \
                        "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
             else:
                 issue = create_issue(song, artist, version, stripped)
