@@ -3,18 +3,16 @@ import re
 import os
 import requests
 import git
-import hmac
-import hashlib
 import json
 from requests.auth import HTTPBasicAuth
-from ipaddress import ip_address, ip_network
-from functools import wraps
 from flask import Flask, request, abort, render_template
 from swaglyrics.cli import stripper
 from swaglyrics import __version__
 from flask_sqlalchemy import SQLAlchemy
 from flask_limiter import Limiter
 from flask_limiter.util import get_ipaddr
+
+from utils import is_valid_signature, request_from_github
 
 app = Flask(__name__)
 limiter = Limiter(
@@ -30,6 +28,10 @@ passwd = os.environ['PASSWD']
 # declare the Spotify token and expiry time
 token = ''
 t_expiry = 0
+
+gh_issue_text = "If you feel there's an error, open a ticket at " \
+                "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
+update_text = 'Please update SwagLyrics to the latest version to get better support :)'
 
 # genius stripper regex
 alg = re.compile(r'[^\sa-zA-Z0-9]+')
@@ -68,6 +70,9 @@ class Lyrics(db.Model):
         self.song = song
         self.artist = artist
         self.stripper = stripper
+
+
+# ------------------- important functions begin here ------------------- #
 
 
 def update_token():
@@ -201,6 +206,12 @@ def check_song(song, artist):
     return False
 
 
+def check_stripper(song, artist):
+    # check if song has a lyrics page on genius
+    r = requests.get(f'https://genius.com/{stripper(song, artist)}-lyrics')
+    return r.status_code == requests.codes.ok
+
+
 def del_line(song, artist):
     # delete song and artist from unsupported.txt
     with open('unsupported.txt', 'r') as f:
@@ -215,60 +226,7 @@ def del_line(song, artist):
     # return number of lines deleted
     return cnt
 
-
-def is_valid_signature(x_hub_signature, data, private_key=os.environ['WEBHOOK_SECRET']):
-    hash_algorithm, github_signature = x_hub_signature.split('=', 1)
-    algorithm = hashlib.__dict__.get(hash_algorithm)
-    encoded_key = bytes(private_key, 'latin-1')
-    mac = hmac.new(encoded_key, msg=data, digestmod=algorithm)
-    return hmac.compare_digest(mac.hexdigest(), github_signature)
-
-
-def request_from_github(abort_code=418):
-    """Provide decorator to handle request from github on the webhook."""
-
-    def decorator(f):
-        """Decorate the function to check if a request is a GitHub hook request."""
-
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if request.method != 'POST':
-                return 'OK'
-            else:
-                # Do initial validations on required headers
-                if 'X-Github-Event' not in request.headers:
-                    abort(abort_code)
-                if 'X-Github-Delivery' not in request.headers:
-                    abort(abort_code)
-                if 'X-Hub-Signature' not in request.headers:
-                    abort(abort_code)
-                if not request.is_json:
-                    abort(abort_code)
-                if 'User-Agent' not in request.headers:
-                    abort(abort_code)
-                ua = request.headers.get('User-Agent')
-                if not ua.startswith('GitHub-Hookshot/'):
-                    abort(abort_code)
-
-                if not (ip_header := request.headers.get('CF-Connecting-IP')):
-                    # necessary if ip from cloudflare
-                    ip_header = request.headers['X-Real-IP']
-                request_ip = ip_address(u'{0}'.format(ip_header))
-                meta_json = requests.get('https://api.github.com/meta').json()
-                hook_blocks = meta_json['hooks']
-
-                # Check if the POST request is from GitHub
-                for block in hook_blocks:
-                    if ip_address(request_ip) in ip_network(block):
-                        break
-                else:
-                    print("Unauthorized attempt to deploy by IP {ip}".format(ip=request_ip))
-                    abort(abort_code)
-                return f(*args, **kwargs)
-
-        return decorated_function
-
-    return decorator
+# ------------------- routes begin here ------------------- #
 
 
 @app.route('/unsupported', methods=['POST'])
@@ -282,40 +240,38 @@ def update():
         try:
             version = request.form['version']
         except KeyError:
-            return 'Please update SwagLyrics to the latest version to get better support :)'
+            return update_text
 
         print(song, artist, stripped, version)
-        if version < '1.0.0':
-            return 'Please update SwagLyrics to the latest version to get better support :)'
+        if version < '1.1.1':
+            return update_text
 
-        with open('unsupported.txt', 'r') as f:
+        with open('unsupported.txt', 'r', encoding='utf-8') as f:
             data = f.read()
         if f'{song} by {artist}' in data:
             return 'Issue already exists on the GitHub repo. \n' \
                   'https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues'
 
-        if check_song(song, artist):
-            with open('unsupported.txt', 'a') as f:
+        # check if song, artist trivial (all letters and spaces)
+        if re.fullmatch(asrg, song) and re.fullmatch(asrg, artist):
+            return f'Lyrics for {song} by {artist} may not exist on Genius.\n' + gh_issue_text
+
+        # check if song exists on spotify and does not have lyrics on genius
+        if check_song(song, artist) and not check_stripper(song, artist):
+            with open('unsupported.txt', 'a', encoding='utf-8') as f:
                 f.write(f'{song} by {artist}\n')
 
-            if re.fullmatch(asrg, song) and re.fullmatch(asrg, artist):
-                return f"Lyrics of {song} by {artist} may not exist on Genius.\n" \
-                       "If you feel there's an error, open a ticket at " \
-                       "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
-            else:
-                issue = create_issue(song, artist, version, stripped)
-                if issue['status_code'] == 201:
-                    print(f'Created issue on the GitHub repo for {song} by {artist}.')
-                    return 'Lyrics for that song may not exist on Genius. ' \
-                           f'Created issue on the GitHub repo for {song} by ' \
-                           '{artist} to investigate further. \n{link}'.format(
-                           artist=artist, link=issue['link'])
-                else:
-                    return f'Logged {song} by {artist} in the server.'
+            issue = create_issue(song, artist, version, stripped)
 
-        return "That's a fishy request, that artist and song doesn't seem to exist on Spotify. \n" \
-               "If you feel there's an error, open a ticket at " \
-               "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
+            if issue['status_code'] == 201:
+                print(f'Created issue on the GitHub repo for {song} by {artist}.')
+                return 'Lyrics for that song may not exist on Genius. ' \
+                       'Created issue on the GitHub repo for {song} by {artist} to investigate ' \
+                       'further. \n{link}'.format(song=song, artist=artist, link=issue['link'])
+            else:
+                return f'Logged {song} by {artist} in the server.'
+
+        return "That's a fishy request, that song doesn't seem to exist on Spotify. \n" + gh_issue_text
 
 
 @app.route("/stripper", methods=["GET", "POST"])
