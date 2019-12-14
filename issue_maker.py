@@ -206,10 +206,10 @@ def check_song(song, artist):
     return False
 
 
-def check_stripper(song, artist):
-    # check if song has a lyrics page on genius
-    r = requests.get(f'https://genius.com/{stripper(song, artist)}-lyrics')
-    return r.status_code == requests.codes.ok
+# def check_stripper(song, artist):
+#     # check if song has a lyrics page on genius
+#     r = requests.get(f'https://genius.com/{stripper(song, artist)}-lyrics')
+#     return r.status_code == requests.codes.ok
 
 
 def del_line(song, artist):
@@ -257,7 +257,7 @@ def update():
             return f'Lyrics for {song} by {artist} may not exist on Genius.\n' + gh_issue_text
 
         # check if song exists on spotify and does not have lyrics on genius
-        if check_song(song, artist) and not check_stripper(song, artist):
+        if check_song(song, artist):
             with open('unsupported.txt', 'a', encoding='utf-8') as f:
                 f.write(f'{song} by {artist}\n')
 
@@ -427,14 +427,6 @@ def latest_version():
     return __version__
 
 
-@app.route('/')
-@limiter.exempt
-def hello():
-    with open('unsupported.txt', 'r', encoding="utf-8") as f:
-        data = f.readlines()
-    return render_template('hello.html', unsupported_songs=data)
-
-
 @app.route('/test')
 def swag():
     return os.environ['BLAZEIT']
@@ -444,3 +436,11 @@ def swag():
 @limiter.limit("1 per day")
 def slow():
     return "24"
+
+
+@app.route('/')
+@limiter.exempt
+def hello():
+    with open('unsupported.txt', 'r', encoding="utf-8") as f:
+        data = f.readlines()
+    return render_template('hello.html', unsupported_songs=data)

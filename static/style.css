@@ -8,10 +8,15 @@
     font-family: 'Consolas', monospace;
 }
 
+#desc {
+    font-size: 1.1rem;
+}
+
 body{
     background-color: var(--main-bg-dark);
-    font-family: 'Consolas', monospace;
-    color: white;
+    font-family: "Roboto", sans-serif;
+    color: whitesmoke;
+    font-size: 1rem;
 }
 
 a:link, a:visited {
