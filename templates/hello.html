@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel='shortcut icon' type='image/x-icon' href='../static/favicon.ico'/>
     <link rel = "stylesheet" type = "text/css" href = "{{url_for('static', filename='style.css')}}">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel='shortcut icon' type='image/x-icon' href='/static/favicon.ico'/>
+    <meta name="theme-color" content="#1de9b6">
     <title>SwagLyrics Backend</title>
 </head>
 <body>
@@ -20,9 +23,7 @@
     <a href="https://swaglyrics.dev/swaglyrics-backend" target="_blank" rel="noopener">GitHub</a>!
     </p>
 </div>
-<p>
 <h3>Proudly sponsored by <a href="https://pythonanywhere.com" target="_blank" rel="noopener">PythonAnywhere</a>.</h3>
-</p>
 <h3>Unsupported Songs</h3>
 <div id="songs">
     {% for song in unsupported_songs %}
