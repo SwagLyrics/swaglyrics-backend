@@ -1,26 +1,31 @@
-import time
-import re
-import os
-import requests
-import git
 import json
-from requests.auth import HTTPBasicAuth
+import os
+import re
+import time
+
+import git
+import requests
 from flask import Flask, request, abort, render_template
-from swaglyrics.cli import stripper
-from swaglyrics import __version__
-from flask_sqlalchemy import SQLAlchemy
 from flask_limiter import Limiter
 from flask_limiter.util import get_ipaddr
+from flask_sqlalchemy import SQLAlchemy
+from requests.auth import HTTPBasicAuth
+from swaglyrics import __version__
+from swaglyrics.cli import stripper
 
-from utils import is_valid_signature, request_from_github
+from utils import request_from_github, validate_request
 
+# start flask app
 app = Flask(__name__)
+
+# request limiter base rules
 limiter = Limiter(
     app,
     key_func=get_ipaddr,
     default_limits=["1000 per day"]
 )
 
+# Load env variables for usage
 username = os.environ['USERNAME']
 gh_token = os.environ['GH_TOKEN']
 passwd = os.environ['PASSWD']
@@ -36,8 +41,10 @@ update_text = 'Please update SwagLyrics to the latest version to get better supp
 # genius stripper regex
 alg = re.compile(r'[^\sa-zA-Z0-9]+')
 gstr = re.compile(r'(?<=/)[-a-zA-Z0-9]+(?=-lyrics$)')
+
 # webhook regex
 wdt = re.compile(r'(.+) by (.+) unsupported.')
+
 # artist and song regex
 asrg = re.compile(r'[A-Za-z\s]+')
 
@@ -50,12 +57,14 @@ SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{usernam
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 280
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db = SQLAlchemy(app)
 
-
-# you should manually initialize the db for first run
-# >>> from issue_maker import db
-# >>> db.create_all()
+"""
+ you should manually initialize the db for first run
+ >>> from issue_maker import db
+ >>> db.create_all()
+"""
 
 
 class Lyrics(db.Model):
@@ -226,6 +235,7 @@ def del_line(song, artist):
     # return number of lines deleted
     return cnt
 
+
 # ------------------- routes begin here ------------------- #
 
 
@@ -250,7 +260,7 @@ def update():
             data = f.read()
         if f'{song} by {artist}' in data:
             return 'Issue already exists on the GitHub repo. \n' \
-                  'https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues'
+                   'https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues'
 
         # check if song, artist trivial (all letters and spaces)
         if re.fullmatch(asrg, song) and re.fullmatch(asrg, artist):
@@ -314,6 +324,7 @@ def master_unsupported():
     return data
 
 
+# delete song from unsupported.txt when it becomes available
 @app.route("/delete_unsupported", methods=["POST"])
 def delete_line():
     auth = request.form['auth']
@@ -325,52 +336,56 @@ def delete_line():
     return f"Removed {cnt} instances of {song} by {artist} from unsupported.txt successfully."
 
 
+"""
+`github_webhook` function handles all notification from GitHub relating to the org. Documentation for the webhooks can
+be found at https://developer.github.com/webhooks/
+"""
+
+
 @app.route('/issue_closed', methods=['POST'])
-@request_from_github()
-@limiter.exempt
-def issue_webhook():
+@request_from_github()  # verify that request origin is github
+@limiter.exempt  # disable limiter for firehose
+def github_webhook():
     if request.method != 'POST':
         return 'OK'
     else:
-        abort_code = 418
-
         not_relevant = "Event type not unsupported song issue closed."
 
-        event = request.headers.get('X-GitHub-Event')
+        event = request.headers.get('X-GitHub-Event')  # type of event
+        payload = validate_request(request)
+
+        # Respond to ping as 200 OK
         if event == "ping":
-            return json.dumps({'msg': 'Hi!'})
-        if event != "issues":
-            return json.dumps({'msg': "Wrong event type"})
+            return json.dumps({'msg': 'pong'})
 
-        x_hub_signature = request.headers.get('X-Hub-Signature')
-        # webhook content type should be application/json for request.data to have the payload
-        # request.data is empty in case of x-www-form-urlencoded
-        if not is_valid_signature(x_hub_signature, request.data):
-            print('Deploy signature failed: {sig}'.format(sig=x_hub_signature))
-            abort(abort_code)
+        #
+        elif event == "issues":
+            try:
+                label = payload['issue']['labels'][0]['name']
+                # should be unsupported song for our purposes
+                repo = payload['repository']['name']
+                # should be from the SwagLyrics for Spotify repo
+            except IndexError:
+                return not_relevant
 
-        payload = request.get_json()
-        if payload is None:
-            print(f'Deploy payload is empty: {payload}')
-            abort(abort_code)
+            """
+            If the issue is concerning the `SwagLyrics-For-Spotify repo, the issue is being closed and the issue had
+            the tag `unsupported song` then remove line from unsupported.txt
+            """
+            if payload['action'] == 'closed' and label == 'unsupported song' and repo == 'SwagLyrics-For-Spotify':
+                title = payload['issue']['title']
+                title = wdt.match(title)
+                song = title.group(1)
+                artist = title.group(2)
+                print(f'{song} by {artist} is to be deleted.')
+                cnt = del_line(song, artist)
+                return f'Deleted {cnt} instances from unsupported.txt'
 
-        try:
-            label = payload['issue']['labels'][0]['name']
-            # should be unsupported song for our purposes
-            repo = payload['repository']['name']
-            # should be from the SwagLyrics for Spotify repo
-        except IndexError:
-            return not_relevant
-
-        if payload['action'] == 'closed' and label == 'unsupported song' and repo == 'SwagLyrics-For-Spotify':
-            # delete line from unsupported.txt if issue closed
-            title = payload['issue']['title']
-            title = wdt.match(title)
-            song = title.group(1)
-            artist = title.group(2)
-            print(f'{song} by {artist} is to be deleted.')
-            cnt = del_line(song, artist)
-            return f'Deleted {cnt} instances from unsupported.txt'
+        # Respond to star event by posting on discord in #gh-activity on SwagLyrics guild
+        elif event == "star":
+            pass
+        else:
+            return json.dumps({'msg': 'Wrong event type'})
 
         return not_relevant
 
@@ -379,28 +394,16 @@ def issue_webhook():
 @request_from_github()
 @limiter.exempt
 def update_webhook():
+    # Make sure request is of type post
     if request.method != 'POST':
         return 'OK'
-    else:
-        abort_code = 418
 
-        event = request.headers.get('X-GitHub-Event')
-        if event == "ping":
-            return json.dumps({'msg': 'Hi!'})
-        if event != "push":
-            return json.dumps({'msg': "Wrong event type"})
+    event = request.headers.get('X-GitHub-Event')
 
-        x_hub_signature = request.headers.get('X-Hub-Signature')
-        # webhook content type should be application/json for request.data to have the payload
-        # request.data is empty in case of x-www-form-urlencoded
-        if not is_valid_signature(x_hub_signature, request.data):
-            print('Deploy signature failed: {sig}'.format(sig=x_hub_signature))
-            abort(abort_code)
-
-        payload = request.get_json()
-        if payload is None:
-            print(f'Deploy payload is empty: {payload}')
-            abort(abort_code)
+    if event == "ping":
+        return json.dumps({'msg': 'Hi!'})
+    elif event == "push":
+        payload = validate_request(request)
 
         if payload['ref'] != 'refs/heads/master':
             return json.dumps({'msg': 'Not master; ignoring'})
@@ -419,25 +422,30 @@ def update_webhook():
         build_commit = f'build_commit = "{commit_hash}"'
         print(f'{build_commit}')
         return 'Updated PythonAnywhere server to commit {commit}'.format(commit=commit_hash)
+    else:
+        return json.dumps({'msg': "Wrong event type"})
 
 
+# returns the latest version of swaglyrics as a string
 @app.route('/version')
 def latest_version():
-    # latest swaglyrics version
     return __version__
 
 
+# test path to assist in testing of server
 @app.route('/test')
 def swag():
     return os.environ['BLAZEIT']
 
 
+# Route to test rate limiter is functioning correctly
 @app.route("/slow")
 @limiter.limit("1 per day")
 def slow():
     return "24"
 
 
+# Dispatch webpage for website home
 @app.route('/')
 @limiter.exempt
 def hello():

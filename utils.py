@@ -8,6 +8,20 @@ import requests
 from flask import request, abort
 
 
+def validate_request(req):
+    abort_code = 418
+    x_hub_signature = req.headers.get('X-Hub-Signature')
+    if not is_valid_signature(x_hub_signature, req.data):
+        print(f'Deploy signature failed: {x_hub_signature}')
+        abort(abort_code)
+
+    if (payload := request.get_json()) is None:
+        print(f'Payload is empty: {payload}')
+        abort(abort_code)
+
+    return payload
+
+
 def is_valid_signature(x_hub_signature, data, private_key=os.environ['WEBHOOK_SECRET']):
     """Verify webhook signature"""
     hash_algorithm, github_signature = x_hub_signature.split('=', 1)
@@ -46,6 +60,7 @@ def request_from_github(abort_code=418):
                 if not (ip_header := request.headers.get('CF-Connecting-IP')):
                     # necessary if ip from cloudflare
                     ip_header = request.headers['X-Real-IP']
+
                 request_ip = ip_address(u'{0}'.format(ip_header))
                 meta_json = requests.get('https://api.github.com/meta').json()
                 hook_blocks = meta_json['hooks']
