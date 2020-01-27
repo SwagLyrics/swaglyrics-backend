@@ -1,6 +1,8 @@
 import hashlib
 import hmac
 import os
+import time
+import jwt
 from functools import wraps
 from ipaddress import ip_address, ip_network
 
@@ -77,3 +79,35 @@ def request_from_github(abort_code=418):
         return decorated_function
 
     return decorator
+
+# ------------------- authentication functions ------------------- #
+
+
+def get_jwt(app_id: int, private_key):
+
+    payload = {
+        "iat": int(time.time()),
+        "exp": int(time.time()) + (10 * 60),
+        "iss": app_id,
+    }
+    encoded = jwt.encode(payload, private_key, algorithm="RS256")
+    bearer_token = encoded.decode("utf-8")
+
+    return bearer_token
+
+
+def get_installation_access_token(jwt: str, installation_id: int):
+    # doc: https: // developer.github.com/v3/apps/#create-a-new-installation-token
+
+    access_token_url = f"https://api.github.com/app/installations/{installation_id}/access_tokens"
+    headers = {"Authorization": f"Bearer {jwt}",
+               "Accept": "application/vnd.github.machine-man-preview+json"}
+    response = requests.post(access_token_url, headers=headers)
+
+    # example response
+    # {
+    #   "token": "v1.1f699f1069f60xxx",
+    #   "expires_at": "2016-07-11T22:14:10Z"
+    # }
+
+    return response

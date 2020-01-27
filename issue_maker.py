@@ -2,18 +2,18 @@ import json
 import os
 import re
 import time
-
 import git
 import requests
 from flask import Flask, request, abort, render_template
 from flask_limiter import Limiter
 from flask_limiter.util import get_ipaddr
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime as dt
 from requests.auth import HTTPBasicAuth
 from swaglyrics import __version__
 from swaglyrics.cli import stripper
 
-from utils import request_from_github, validate_request
+from utils import request_from_github, validate_request, get_jwt, get_installation_access_token
 
 # start flask app
 app = Flask(__name__)
@@ -25,14 +25,17 @@ limiter = Limiter(
     default_limits=["1000 per day"]
 )
 
-# Load env variables for usage
+# database env variables
 username = os.environ['USERNAME']
-gh_token = os.environ['GH_TOKEN']
 passwd = os.environ['PASSWD']
 
+# github variables
+gh_token = ''
+gh_token_expiry = 0
+
 # declare the Spotify token and expiry time
-token = ''
-t_expiry = 0
+spotify_token = ''
+spotify_token_expiry = 0
 
 gh_issue_text = "If you feel there's an error, open a ticket at " \
                 "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
@@ -83,22 +86,43 @@ class Lyrics(db.Model):
 
 # ------------------- important functions begin here ------------------- #
 
+def get_github_token():
+    """
+    Returns the github auth token, updates if it has expired.
+    :return: github token
+    """
+    global gh_token, gh_token_expiry
+    # 3 minutes buffer
+    if gh_token_expiry - 180 > time.time():
+        print(f"using github token: {gh_token[:22]}")
+        return gh_token
+    print("updating github token")
+    private_pem = os.environ['PRIVATE_PEM']
+    jwt = get_jwt(os.environ['APP_ID'], private_pem)
+    response = get_installation_access_token(jwt, os.environ['INST_ID']).json()
+    gh_token = response["token"]
+    gh_token_expiry = dt.strptime(response["expires_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp()
+    print(f"github token updated: {gh_token[:22]}")
+    return gh_token
 
-def update_token():
+
+def get_spotify_token():
     """
-    Update the global Spotify Access Token variable and expiry time.
-    :return:
+    Return the spotify auth token, updates if it has expired.
+    :return: spotify token
     """
-    global token, t_expiry
+    global spotify_token, spotify_token_expiry
+    # check if token expired ( - 300 to add buffer of 5 minutes)
+    if spotify_token_expiry - 300 > time.time():
+        print(f'using spotify token: {spotify_token[:41]}')
+        return spotify_token
     r = requests.post('https://accounts.spotify.com/api/token', data={
         'grant_type': 'client_credentials'}, auth=HTTPBasicAuth(os.environ['C_ID'], os.environ['SECRET']))
-    token = r.json()['access_token']
-    t_expiry = time.time()
-    print('updated token', token[:41])
-
-
-# initialize the Spotify token and expiry time
-update_token()
+    spotify_token = r.json()['access_token']
+    # token valid for an hour
+    spotify_token_expiry = time.time() + 3600
+    print(f'updated spotify token: {spotify_token[:41]}')
+    return spotify_token
 
 
 def genius_stripper(song, artist):
@@ -175,8 +199,13 @@ def create_issue(song, artist, version, stripper='not supported yet'):
                 f"stripper -> {stripper}</b>\n\nversion -> {version}</tt>",
         "labels": ["unsupported song"]
     }
-    r = requests.post('https://api.github.com/repos/SwagLyrics/swaglyrics-for-spotify/issues',
-                      auth=HTTPBasicAuth(username, gh_token), json=json)
+    headers = {
+                "Authorization": f"token {get_github_token()}",
+                "Accept": "application/vnd.github.machine-man-preview+json"
+    }
+
+    r = requests.post('https://api.github.com/repos/SwagLyrics/Swaglyrics-For-Spotify/issues',
+                      headers=headers, json=json)
 
     return {
         'status_code': r.status_code,
@@ -194,11 +223,7 @@ def check_song(song, artist):
     :param artist: the artist of song
     :return: Boolean depending if it was found on Spotify or not
     """
-    global token, t_expiry
-    print('using token', token[:41])
-    if t_expiry + 3600 - 300 < time.time():  # check if token expired ( - 300 to add buffer of 5 minutes)
-        update_token()
-    headers = {"Authorization": f"Bearer {token}"}
+    headers = {"Authorization": f"Bearer {get_spotify_token()}"}
     r = requests.get('https://api.spotify.com/v1/search', headers=headers, params={'q': f'{song} {artist}',
                                                                                    'type': 'track'})
     try:
