@@ -13,7 +13,7 @@ from requests.auth import HTTPBasicAuth
 from swaglyrics import __version__
 from swaglyrics.cli import stripper
 
-from utils import request_from_github, validate_request, get_jwt, get_installation_access_token
+from swaglyrics_backend.utils import request_from_github, validate_request, get_jwt, get_installation_access_token
 
 # start flask app
 app = Flask(__name__)
@@ -53,10 +53,9 @@ asrg = re.compile(r'[A-Za-z\s]+')
 
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{username}.mysql.pythonanywhere-services." \
                           "com/{username}${databasename}".format(
-                                                                username=username,
-                                                                password=os.environ['DB_PWD'],
-                                                                databasename="strippers",
-                                                            )
+                                                                 username=username,
+                                                                 password=os.environ['DB_PWD'],
+                                                                 databasename="strippers")
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 280
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -146,8 +145,8 @@ def genius_stripper(song, artist):
     print(f'stripped title: {title}')
 
     words = title.split()
-
     max_err = len(words) // 2
+
     # allow half length mismatch
     print(f'max_err is set to {max_err}')
 
@@ -162,15 +161,7 @@ def genius_stripper(song, artist):
                 full_title = re.sub(alg, '', full_title)
                 print(f'stripped full title: {full_title}')
 
-                err_cnt = 0
-
-                for word in words:
-                    if word.lower() not in full_title.lower():
-                        err_cnt += 1
-                        print(f'broke on {word}')
-                        if err_cnt > max_err:
-                            break
-                else:
+                if not is_title_mismatched(words, full_title, max_err):
                     # return stripper as no mismatch
                     path = gstr.search(hit['result']['path'])
                     try:
@@ -182,6 +173,17 @@ def genius_stripper(song, artist):
 
             print('stripper not found')
             return None
+
+
+def is_title_mismatched(words, full_title, max_err):
+    err_cnt = 0
+    for word in words:
+        if word.lower() not in full_title.lower():
+            err_cnt += 1
+            print(f'broke on {word}')
+            if err_cnt > max_err:
+                return True
+    return False
 
 
 def create_issue(song, artist, version, stripper='not supported yet'):

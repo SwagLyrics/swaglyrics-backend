@@ -1,0 +1,371 @@
+{
+  "meta": {
+    "status": 200
+  },
+  "response": {
+    "hits": [
+      {
+        "highlights": [],
+        "index": "song",
+        "type": "song",
+        "result": {
+          "annotation_count": 10,
+          "api_path": "/songs/4275622",
+          "full_title": "Miracle by Caravan Palace",
+          "header_image_thumbnail_url": "https://images.genius.com/c35fde066cf04ed0e381c538969d0df6.300x300x1.jpg",
+          "header_image_url": "https://images.genius.com/c35fde066cf04ed0e381c538969d0df6.1000x1000x1.jpg",
+          "id": 4275622,
+          "lyrics_owner_id": 4582243,
+          "lyrics_state": "complete",
+          "path": "/Caravan-palace-miracle-lyrics",
+          "pyongs_count": 5,
+          "song_art_image_thumbnail_url": "https://images.genius.com/c35fde066cf04ed0e381c538969d0df6.300x300x1.jpg",
+          "song_art_image_url": "https://images.genius.com/c35fde066cf04ed0e381c538969d0df6.1000x1000x1.jpg",
+          "stats": {
+            "unreviewed_annotations": 7,
+            "hot": false,
+            "pageviews": 22426
+          },
+          "title": "Miracle",
+          "title_with_featured": "Miracle",
+          "url": "https://genius.com/Caravan-palace-miracle-lyrics",
+          "primary_artist": {
+            "api_path": "/artists/49684",
+            "header_image_url": "https://images.genius.com/e9bc163a20e9cfacfcf4e177dc0e1114.856x200x1.jpg",
+            "id": 49684,
+            "image_url": "https://images.genius.com/ca9236bb9c4f5bd7065c3b9b8684aea5.1000x1000x1.jpg",
+            "is_meme_verified": false,
+            "is_verified": false,
+            "name": "Caravan Palace",
+            "url": "https://genius.com/artists/Caravan-palace"
+          }
+        }
+      },
+      {
+        "highlights": [],
+        "index": "song",
+        "type": "song",
+        "result": {
+          "annotation_count": 0,
+          "api_path": "/songs/4317921",
+          "full_title": "Miracle (Traduction Française) by Caravan Palace",
+          "header_image_thumbnail_url": "https://images.genius.com/ca9236bb9c4f5bd7065c3b9b8684aea5.300x300x1.jpg",
+          "header_image_url": "https://images.genius.com/ca9236bb9c4f5bd7065c3b9b8684aea5.1000x1000x1.jpg",
+          "id": 4317921,
+          "lyrics_owner_id": 7918137,
+          "lyrics_state": "complete",
+          "path": "/Caravan-palace-miracle-traduction-francaise-lyrics",
+          "pyongs_count": null,
+          "song_art_image_thumbnail_url": "https://images.genius.com/ca9236bb9c4f5bd7065c3b9b8684aea5.300x300x1.jpg",
+          "song_art_image_url": "https://images.genius.com/ca9236bb9c4f5bd7065c3b9b8684aea5.1000x1000x1.jpg",
+          "stats": {
+            "unreviewed_annotations": 0,
+            "hot": false
+          },
+          "title": "Miracle (Traduction Française)",
+          "title_with_featured": "Miracle (Traduction Française)",
+          "url": "https://genius.com/Caravan-palace-miracle-traduction-francaise-lyrics",
+          "primary_artist": {
+            "api_path": "/artists/49684",
+            "header_image_url": "https://images.genius.com/e9bc163a20e9cfacfcf4e177dc0e1114.856x200x1.jpg",
+            "id": 49684,
+            "image_url": "https://images.genius.com/ca9236bb9c4f5bd7065c3b9b8684aea5.1000x1000x1.jpg",
+            "is_meme_verified": false,
+            "is_verified": false,
+            "name": "Caravan Palace",
+            "url": "https://genius.com/artists/Caravan-palace"
+          }
+        }
+      },
+      {
+        "highlights": [],
+        "index": "song",
+        "type": "song",
+        "result": {
+          "annotation_count": 1,
+          "api_path": "/songs/4298290",
+          "full_title": "New Music Friday 02/08/19 by Spotify",
+          "header_image_thumbnail_url": "https://images.genius.com/8f2c3e40a241ea83e47de85ae5c73ef2.300x300x1.jpg",
+          "header_image_url": "https://images.genius.com/8f2c3e40a241ea83e47de85ae5c73ef2.300x300x1.jpg",
+          "id": 4298290,
+          "lyrics_owner_id": 5637607,
+          "lyrics_state": "complete",
+          "path": "/Spotify-new-music-friday-02-08-19-annotated",
+          "pyongs_count": null,
+          "song_art_image_thumbnail_url": "https://images.genius.com/8f2c3e40a241ea83e47de85ae5c73ef2.300x300x1.jpg",
+          "song_art_image_url": "https://images.genius.com/8f2c3e40a241ea83e47de85ae5c73ef2.300x300x1.jpg",
+          "stats": {
+            "unreviewed_annotations": 0,
+            "hot": false
+          },
+          "title": "New Music Friday 02/08/19",
+          "title_with_featured": "New Music Friday 02/08/19",
+          "url": "https://genius.com/Spotify-new-music-friday-02-08-19-annotated",
+          "primary_artist": {
+            "api_path": "/artists/69342",
+            "header_image_url": "https://images.genius.com/6e4f3fc4533e3f41728c5e80d8a2b1d6.400x400x1.jpg",
+            "id": 69342,
+            "image_url": "https://images.genius.com/141d96cdaf6ed557155c18ed91af11e6.1000x1000x1.png",
+            "is_meme_verified": false,
+            "is_verified": false,
+            "name": "Spotify",
+            "url": "https://genius.com/artists/Spotify"
+          }
+        }
+      },
+      {
+        "highlights": [],
+        "index": "song",
+        "type": "song",
+        "result": {
+          "annotation_count": 0,
+          "api_path": "/songs/2463215",
+          "full_title": "El Carnaval by Lénième",
+          "header_image_thumbnail_url": "https://assets.genius.com/images/default_cover_image.png?1579713880",
+          "header_image_url": "https://assets.genius.com/images/default_cover_image.png?1579713880",
+          "id": 2463215,
+          "lyrics_owner_id": 3183818,
+          "lyrics_state": "complete",
+          "path": "/Lenieme-el-carnaval-lyrics",
+          "pyongs_count": null,
+          "song_art_image_thumbnail_url": "https://assets.genius.com/images/default_cover_image.png?1579713880",
+          "song_art_image_url": "https://assets.genius.com/images/default_cover_image.png?1579713880",
+          "stats": {
+            "unreviewed_annotations": 0,
+            "hot": false
+          },
+          "title": "El Carnaval",
+          "title_with_featured": "El Carnaval",
+          "url": "https://genius.com/Lenieme-el-carnaval-lyrics",
+          "primary_artist": {
+            "api_path": "/artists/81695",
+            "header_image_url": "https://assets.genius.com/images/default_avatar_300.png?1579713880",
+            "id": 81695,
+            "image_url": "https://assets.genius.com/images/default_avatar_300.png?1579713880",
+            "is_meme_verified": false,
+            "is_verified": false,
+            "name": "Lénième",
+            "url": "https://genius.com/artists/Lenieme"
+          }
+        }
+      },
+      {
+        "highlights": [],
+        "index": "song",
+        "type": "song",
+        "result": {
+          "annotation_count": 0,
+          "api_path": "/songs/4042565",
+          "full_title": "I Do Miracles by John Kander (Ft. Chita Rivera & Kirsti Carnahan)",
+          "header_image_thumbnail_url": "https://images.genius.com/ce67e3da44525ddd2e08e89f252e3e50.300x300x1.jpg",
+          "header_image_url": "https://images.genius.com/ce67e3da44525ddd2e08e89f252e3e50.400x400x1.jpg",
+          "id": 4042565,
+          "lyrics_owner_id": 5379832,
+          "lyrics_state": "complete",
+          "path": "/John-kander-i-do-miracles-lyrics",
+          "pyongs_count": null,
+          "song_art_image_thumbnail_url": "https://images.genius.com/ce67e3da44525ddd2e08e89f252e3e50.300x300x1.jpg",
+          "song_art_image_url": "https://images.genius.com/ce67e3da44525ddd2e08e89f252e3e50.400x400x1.jpg",
+          "stats": {
+            "unreviewed_annotations": 0,
+            "hot": false
+          },
+          "title": "I Do Miracles",
+          "title_with_featured": "I Do Miracles (Ft. Chita Rivera & Kirsti Carnahan)",
+          "url": "https://genius.com/John-kander-i-do-miracles-lyrics",
+          "primary_artist": {
+            "api_path": "/artists/368964",
+            "header_image_url": "https://images.genius.com/401b8cd01d43a379f08702672819d028.228x228x1.jpg",
+            "id": 368964,
+            "image_url": "https://images.genius.com/401b8cd01d43a379f08702672819d028.228x228x1.jpg",
+            "is_meme_verified": false,
+            "is_verified": false,
+            "name": "John Kander",
+            "url": "https://genius.com/artists/John-kander"
+          }
+        }
+      },
+      {
+        "highlights": [],
+        "index": "song",
+        "type": "song",
+        "result": {
+          "annotation_count": 1,
+          "api_path": "/songs/1259613",
+          "full_title": "Caravan by Utopia",
+          "header_image_thumbnail_url": "https://images.genius.com/f7e576e0d12167b15d3f51ba1fc33e2d.300x300x1.jpg",
+          "header_image_url": "https://images.genius.com/f7e576e0d12167b15d3f51ba1fc33e2d.1000x1000x1.jpg",
+          "id": 1259613,
+          "lyrics_owner_id": 5593635,
+          "lyrics_state": "complete",
+          "path": "/Utopia-caravan-lyrics",
+          "pyongs_count": null,
+          "song_art_image_thumbnail_url": "https://images.genius.com/f7e576e0d12167b15d3f51ba1fc33e2d.300x300x1.jpg",
+          "song_art_image_url": "https://images.genius.com/f7e576e0d12167b15d3f51ba1fc33e2d.1000x1000x1.jpg",
+          "stats": {
+            "unreviewed_annotations": 0,
+            "hot": false
+          },
+          "title": "Caravan",
+          "title_with_featured": "Caravan",
+          "url": "https://genius.com/Utopia-caravan-lyrics",
+          "primary_artist": {
+            "api_path": "/artists/356190",
+            "header_image_url": "https://images.genius.com/8bea410fae080c5cd50a7fdaf2982329.934x342x1.jpg",
+            "id": 356190,
+            "image_url": "https://images.genius.com/288a665b8e7a723d5e502a920e10a760.412x412x1.jpg",
+            "is_meme_verified": false,
+            "is_verified": false,
+            "name": "Utopia",
+            "url": "https://genius.com/artists/Utopia"
+          }
+        }
+      },
+      {
+        "highlights": [],
+        "index": "song",
+        "type": "song",
+        "result": {
+          "annotation_count": 1,
+          "api_path": "/songs/505149",
+          "full_title": "Lore Of The Unicorn - Chapter 6 by Odell Shepard",
+          "header_image_thumbnail_url": "https://assets.genius.com/images/default_cover_image.png?1579713880",
+          "header_image_url": "https://assets.genius.com/images/default_cover_image.png?1579713880",
+          "id": 505149,
+          "lyrics_owner_id": 389740,
+          "lyrics_state": "complete",
+          "path": "/Odell-shepard-lore-of-the-unicorn-chapter-6-annotated",
+          "pyongs_count": null,
+          "song_art_image_thumbnail_url": "https://assets.genius.com/images/default_cover_image.png?1579713880",
+          "song_art_image_url": "https://assets.genius.com/images/default_cover_image.png?1579713880",
+          "stats": {
+            "unreviewed_annotations": 1,
+            "hot": false
+          },
+          "title": "Lore Of The Unicorn - Chapter 6",
+          "title_with_featured": "Lore Of The Unicorn - Chapter 6",
+          "url": "https://genius.com/Odell-shepard-lore-of-the-unicorn-chapter-6-annotated",
+          "primary_artist": {
+            "api_path": "/artists/221669",
+            "header_image_url": "https://assets.genius.com/images/default_avatar_300.png?1579713880",
+            "id": 221669,
+            "image_url": "https://assets.genius.com/images/default_avatar_300.png?1579713880",
+            "is_meme_verified": false,
+            "is_verified": false,
+            "name": "Odell Shepard",
+            "url": "https://genius.com/artists/Odell-shepard"
+          }
+        }
+      },
+      {
+        "highlights": [],
+        "index": "song",
+        "type": "song",
+        "result": {
+          "annotation_count": 1,
+          "api_path": "/songs/187785",
+          "full_title": "Arabian Nights,Vol. 2 (Chap. 3) by Richard F. Burton",
+          "header_image_thumbnail_url": "https://images.genius.com/689dbb027e3d25f850a3886095449635.241x241x1.jpg",
+          "header_image_url": "https://images.genius.com/689dbb027e3d25f850a3886095449635.241x241x1.jpg",
+          "id": 187785,
+          "lyrics_owner_id": 225680,
+          "lyrics_state": "complete",
+          "path": "/Richard-f-burton-arabian-nightsvol-2-chap-3-annotated",
+          "pyongs_count": null,
+          "song_art_image_thumbnail_url": "https://images.genius.com/689dbb027e3d25f850a3886095449635.241x241x1.jpg",
+          "song_art_image_url": "https://images.genius.com/689dbb027e3d25f850a3886095449635.241x241x1.jpg",
+          "stats": {
+            "unreviewed_annotations": 1,
+            "hot": false,
+            "pageviews": 10343
+          },
+          "title": "Arabian Nights,Vol. 2 (Chap. 3)",
+          "title_with_featured": "Arabian Nights,Vol. 2 (Chap. 3)",
+          "url": "https://genius.com/Richard-f-burton-arabian-nightsvol-2-chap-3-annotated",
+          "primary_artist": {
+            "api_path": "/artists/60165",
+            "header_image_url": "https://images.genius.com/689dbb027e3d25f850a3886095449635.241x241x1.jpg",
+            "id": 60165,
+            "image_url": "https://images.genius.com/689dbb027e3d25f850a3886095449635.241x241x1.jpg",
+            "is_meme_verified": false,
+            "is_verified": false,
+            "name": "Richard F. Burton",
+            "url": "https://genius.com/artists/Richard-f-burton"
+          }
+        }
+      },
+      {
+        "highlights": [],
+        "index": "song",
+        "type": "song",
+        "result": {
+          "annotation_count": 1,
+          "api_path": "/songs/458088",
+          "full_title": "Madame Swann at Home (Chapter 1) by Marcel Proust",
+          "header_image_thumbnail_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+          "header_image_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+          "id": 458088,
+          "lyrics_owner_id": 184747,
+          "lyrics_state": "complete",
+          "path": "/Marcel-proust-madame-swann-at-home-chapter-1-lyrics",
+          "pyongs_count": 2,
+          "song_art_image_thumbnail_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+          "song_art_image_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+          "stats": {
+            "unreviewed_annotations": 0,
+            "hot": false
+          },
+          "title": "Madame Swann at Home (Chapter 1)",
+          "title_with_featured": "Madame Swann at Home (Chapter 1)",
+          "url": "https://genius.com/Marcel-proust-madame-swann-at-home-chapter-1-lyrics",
+          "primary_artist": {
+            "api_path": "/artists/57252",
+            "header_image_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+            "id": 57252,
+            "image_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+            "is_meme_verified": false,
+            "is_verified": false,
+            "name": "Marcel Proust",
+            "url": "https://genius.com/artists/Marcel-proust"
+          }
+        }
+      },
+      {
+        "highlights": [],
+        "index": "song",
+        "type": "song",
+        "result": {
+          "annotation_count": 1,
+          "api_path": "/songs/467863",
+          "full_title": "M. de Charlus during the war(Chap. 2) by Marcel Proust",
+          "header_image_thumbnail_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+          "header_image_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+          "id": 467863,
+          "lyrics_owner_id": 184747,
+          "lyrics_state": "complete",
+          "path": "/Marcel-proust-m-de-charlus-during-the-warchap-2-lyrics",
+          "pyongs_count": null,
+          "song_art_image_thumbnail_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+          "song_art_image_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+          "stats": {
+            "unreviewed_annotations": 0,
+            "hot": false
+          },
+          "title": "M. de Charlus during the war(Chap. 2)",
+          "title_with_featured": "M. de Charlus during the war(Chap. 2)",
+          "url": "https://genius.com/Marcel-proust-m-de-charlus-during-the-warchap-2-lyrics",
+          "primary_artist": {
+            "api_path": "/artists/57252",
+            "header_image_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+            "id": 57252,
+            "image_url": "https://s3.amazonaws.com/rapgenius/1374036251_Marcel_Proust_1900-2.jpg",
+            "is_meme_verified": false,
+            "is_verified": false,
+            "name": "Marcel Proust",
+            "url": "https://genius.com/artists/Marcel-proust"
+          }
+        }
+      }
+    ]
+  }
+}

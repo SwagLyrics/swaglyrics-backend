@@ -1,0 +1,694 @@
+{
+  "tracks": {
+    "href": "https://api.spotify.com/v1/search?query=Miracle+Caravan+Palace&type=track&offset=0&limit=20",
+    "items": [
+      {
+        "album": {
+          "album_type": "album",
+          "artists": [
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+              },
+              "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+              "id": "37J1PlAkhRK7yrZUtqaUpQ",
+              "name": "Caravan Palace",
+              "type": "artist",
+              "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+            }
+          ],
+          "available_markets": [
+            "CZ",
+            "DK",
+            "ES",
+            "FI",
+            "GB",
+            "GR",
+            "IE",
+            "IS",
+            "IT",
+            "NL",
+            "NO",
+            "PL",
+            "PT",
+            "SE"
+          ],
+          "external_urls": {
+            "spotify": "https://open.spotify.com/album/36AWYqwFvbAbxxCFgbRfJo"
+          },
+          "href": "https://api.spotify.com/v1/albums/36AWYqwFvbAbxxCFgbRfJo",
+          "id": "36AWYqwFvbAbxxCFgbRfJo",
+          "images": [
+            {
+              "height": 640,
+              "url": "https://i.scdn.co/image/062e24ba4ee06f1aab85dd98644d2080ff910f11",
+              "width": 640
+            },
+            {
+              "height": 300,
+              "url": "https://i.scdn.co/image/c4ad955257a42e66f25ee17248b733ddb7210725",
+              "width": 300
+            },
+            {
+              "height": 64,
+              "url": "https://i.scdn.co/image/8b092a34c5bbf2a300973b085bff8d0c0c7ef67a",
+              "width": 64
+            }
+          ],
+          "name": "Chronologic",
+          "release_date": "2019-08-30",
+          "release_date_precision": "day",
+          "total_tracks": 11,
+          "type": "album",
+          "uri": "spotify:album:36AWYqwFvbAbxxCFgbRfJo"
+        },
+        "artists": [
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+            },
+            "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+            "id": "37J1PlAkhRK7yrZUtqaUpQ",
+            "name": "Caravan Palace",
+            "type": "artist",
+            "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+          }
+        ],
+        "available_markets": [
+          "CZ",
+          "DK",
+          "ES",
+          "FI",
+          "GB",
+          "GR",
+          "IE",
+          "IS",
+          "IT",
+          "NL",
+          "NO",
+          "PL",
+          "PT",
+          "SE"
+        ],
+        "disc_number": 1,
+        "duration_ms": 216213,
+        "explicit": false,
+        "external_ids": {
+          "isrc": "FR9W11827929"
+        },
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/5uKKPK1HAdPL3y4CEQDL7q"
+        },
+        "href": "https://api.spotify.com/v1/tracks/5uKKPK1HAdPL3y4CEQDL7q",
+        "id": "5uKKPK1HAdPL3y4CEQDL7q",
+        "is_local": false,
+        "name": "Miracle",
+        "popularity": 50,
+        "preview_url": "https://p.scdn.co/mp3-preview/92b411048560dbf72f10f466275a2d2e12ed965a?cid=774b29d4f13844c495f206cafdad9c86",
+        "track_number": 1,
+        "type": "track",
+        "uri": "spotify:track:5uKKPK1HAdPL3y4CEQDL7q"
+      },
+      {
+        "album": {
+          "album_type": "single",
+          "artists": [
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+              },
+              "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+              "id": "37J1PlAkhRK7yrZUtqaUpQ",
+              "name": "Caravan Palace",
+              "type": "artist",
+              "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+            }
+          ],
+          "available_markets": [
+            "CZ",
+            "DK",
+            "ES",
+            "FI",
+            "GB",
+            "GR",
+            "IE",
+            "IS",
+            "IT",
+            "NL",
+            "NO",
+            "PL",
+            "PT",
+            "SE"
+          ],
+          "external_urls": {
+            "spotify": "https://open.spotify.com/album/74yAk29MqfiSeCj21onVe6"
+          },
+          "href": "https://api.spotify.com/v1/albums/74yAk29MqfiSeCj21onVe6",
+          "id": "74yAk29MqfiSeCj21onVe6",
+          "images": [
+            {
+              "height": 640,
+              "url": "https://i.scdn.co/image/ac3376d4b81cb0baf46b0f1ec7ac09bccd30ca11",
+              "width": 640
+            },
+            {
+              "height": 300,
+              "url": "https://i.scdn.co/image/7dbb639d5e66156ff7f8b3a871106e41ad4ac3c4",
+              "width": 300
+            },
+            {
+              "height": 64,
+              "url": "https://i.scdn.co/image/c5b9161c964aec959f226c422899597ff064fc24",
+              "width": 64
+            }
+          ],
+          "name": "Miracle",
+          "release_date": "2019-02-08",
+          "release_date_precision": "day",
+          "total_tracks": 1,
+          "type": "album",
+          "uri": "spotify:album:74yAk29MqfiSeCj21onVe6"
+        },
+        "artists": [
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+            },
+            "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+            "id": "37J1PlAkhRK7yrZUtqaUpQ",
+            "name": "Caravan Palace",
+            "type": "artist",
+            "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+          }
+        ],
+        "available_markets": [
+          "CZ",
+          "DK",
+          "ES",
+          "FI",
+          "GB",
+          "GR",
+          "IE",
+          "IS",
+          "IT",
+          "NL",
+          "NO",
+          "PL",
+          "PT",
+          "SE"
+        ],
+        "disc_number": 1,
+        "duration_ms": 216224,
+        "explicit": false,
+        "external_ids": {
+          "isrc": "FR9W11827929"
+        },
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/1zFnf1wfXOl3zX0SrRBTfn"
+        },
+        "href": "https://api.spotify.com/v1/tracks/1zFnf1wfXOl3zX0SrRBTfn",
+        "id": "1zFnf1wfXOl3zX0SrRBTfn",
+        "is_local": false,
+        "name": "Miracle",
+        "popularity": 42,
+        "preview_url": "https://p.scdn.co/mp3-preview/a778f677001dd12ffc1dceb6377213a4f57157e2?cid=774b29d4f13844c495f206cafdad9c86",
+        "track_number": 1,
+        "type": "track",
+        "uri": "spotify:track:1zFnf1wfXOl3zX0SrRBTfn"
+      },
+      {
+        "album": {
+          "album_type": "single",
+          "artists": [
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+              },
+              "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+              "id": "37J1PlAkhRK7yrZUtqaUpQ",
+              "name": "Caravan Palace",
+              "type": "artist",
+              "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+            },
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/4TIrC99WSg0tOtBCGDjMRY"
+              },
+              "href": "https://api.spotify.com/v1/artists/4TIrC99WSg0tOtBCGDjMRY",
+              "id": "4TIrC99WSg0tOtBCGDjMRY",
+              "name": "Boogie Belgique",
+              "type": "artist",
+              "uri": "spotify:artist:4TIrC99WSg0tOtBCGDjMRY"
+            }
+          ],
+          "available_markets": [
+            "CZ",
+            "DK",
+            "ES",
+            "FI",
+            "GB",
+            "GR",
+            "IE",
+            "IS",
+            "IT",
+            "NL",
+            "NO",
+            "PL",
+            "PT",
+            "SE"
+          ],
+          "external_urls": {
+            "spotify": "https://open.spotify.com/album/4kAeKBW5AhAhPivmf8fckW"
+          },
+          "href": "https://api.spotify.com/v1/albums/4kAeKBW5AhAhPivmf8fckW",
+          "id": "4kAeKBW5AhAhPivmf8fckW",
+          "images": [
+            {
+              "height": 640,
+              "url": "https://i.scdn.co/image/077539e97ba92d56a673f9d13fa6d0cfe1340d7b",
+              "width": 640
+            },
+            {
+              "height": 300,
+              "url": "https://i.scdn.co/image/c48942f5e38bba44d67a89149eb62091066c67ff",
+              "width": 300
+            },
+            {
+              "height": 64,
+              "url": "https://i.scdn.co/image/3920f1272ec0d502a730f57ce79d3ce9a83f49be",
+              "width": 64
+            }
+          ],
+          "name": "Miracle (Boogie Belgique Remix)",
+          "release_date": "2019-05-03",
+          "release_date_precision": "day",
+          "total_tracks": 1,
+          "type": "album",
+          "uri": "spotify:album:4kAeKBW5AhAhPivmf8fckW"
+        },
+        "artists": [
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+            },
+            "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+            "id": "37J1PlAkhRK7yrZUtqaUpQ",
+            "name": "Caravan Palace",
+            "type": "artist",
+            "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+          },
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/4TIrC99WSg0tOtBCGDjMRY"
+            },
+            "href": "https://api.spotify.com/v1/artists/4TIrC99WSg0tOtBCGDjMRY",
+            "id": "4TIrC99WSg0tOtBCGDjMRY",
+            "name": "Boogie Belgique",
+            "type": "artist",
+            "uri": "spotify:artist:4TIrC99WSg0tOtBCGDjMRY"
+          }
+        ],
+        "available_markets": [
+          "CZ",
+          "DK",
+          "ES",
+          "FI",
+          "GB",
+          "GR",
+          "IE",
+          "IS",
+          "IT",
+          "NL",
+          "NO",
+          "PL",
+          "PT",
+          "SE"
+        ],
+        "disc_number": 1,
+        "duration_ms": 218969,
+        "explicit": false,
+        "external_ids": {
+          "isrc": "FR9W11908486"
+        },
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/3dpHzehm6VX2SLDwtWj9LM"
+        },
+        "href": "https://api.spotify.com/v1/tracks/3dpHzehm6VX2SLDwtWj9LM",
+        "id": "3dpHzehm6VX2SLDwtWj9LM",
+        "is_local": false,
+        "name": "Miracle (Boogie Belgique Remix)",
+        "popularity": 27,
+        "preview_url": "https://p.scdn.co/mp3-preview/b1ba2cd8971a2d584f4cb9911ee483caaf4e5ca9?cid=774b29d4f13844c495f206cafdad9c86",
+        "track_number": 1,
+        "type": "track",
+        "uri": "spotify:track:3dpHzehm6VX2SLDwtWj9LM"
+      },
+      {
+        "album": {
+          "album_type": "single",
+          "artists": [
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+              },
+              "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+              "id": "37J1PlAkhRK7yrZUtqaUpQ",
+              "name": "Caravan Palace",
+              "type": "artist",
+              "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+            }
+          ],
+          "available_markets": [
+            "CZ",
+            "DK",
+            "ES",
+            "FI",
+            "GB",
+            "GR",
+            "IE",
+            "IS",
+            "IT",
+            "NL",
+            "NO",
+            "PL",
+            "PT",
+            "SE"
+          ],
+          "external_urls": {
+            "spotify": "https://open.spotify.com/album/6F1kcMnBqD3Pw755WNhWKb"
+          },
+          "href": "https://api.spotify.com/v1/albums/6F1kcMnBqD3Pw755WNhWKb",
+          "id": "6F1kcMnBqD3Pw755WNhWKb",
+          "images": [
+            {
+              "height": 640,
+              "url": "https://i.scdn.co/image/90cfdfcf4b9ce09c64c477ef78a9eb4098344d1b",
+              "width": 640
+            },
+            {
+              "height": 300,
+              "url": "https://i.scdn.co/image/ff5ed399086d85c5e5b08c6fab0494a2a08cc57f",
+              "width": 300
+            },
+            {
+              "height": 64,
+              "url": "https://i.scdn.co/image/db284a5f6148188ef991ec52c71c1f324fd349da",
+              "width": 64
+            }
+          ],
+          "name": "Miracle",
+          "release_date": "2019-10-25",
+          "release_date_precision": "day",
+          "total_tracks": 3,
+          "type": "album",
+          "uri": "spotify:album:6F1kcMnBqD3Pw755WNhWKb"
+        },
+        "artists": [
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+            },
+            "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+            "id": "37J1PlAkhRK7yrZUtqaUpQ",
+            "name": "Caravan Palace",
+            "type": "artist",
+            "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+          }
+        ],
+        "available_markets": [
+          "CZ",
+          "DK",
+          "ES",
+          "FI",
+          "GB",
+          "GR",
+          "IE",
+          "IS",
+          "IT",
+          "NL",
+          "NO",
+          "PL",
+          "PT",
+          "SE"
+        ],
+        "disc_number": 1,
+        "duration_ms": 216213,
+        "explicit": false,
+        "external_ids": {
+          "isrc": "FR9W11827929"
+        },
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/2KZWux0VEnNNlQozP2acYQ"
+        },
+        "href": "https://api.spotify.com/v1/tracks/2KZWux0VEnNNlQozP2acYQ",
+        "id": "2KZWux0VEnNNlQozP2acYQ",
+        "is_local": false,
+        "name": "Miracle",
+        "popularity": 29,
+        "preview_url": "https://p.scdn.co/mp3-preview/92b411048560dbf72f10f466275a2d2e12ed965a?cid=774b29d4f13844c495f206cafdad9c86",
+        "track_number": 1,
+        "type": "track",
+        "uri": "spotify:track:2KZWux0VEnNNlQozP2acYQ"
+      },
+      {
+        "album": {
+          "album_type": "single",
+          "artists": [
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+              },
+              "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+              "id": "37J1PlAkhRK7yrZUtqaUpQ",
+              "name": "Caravan Palace",
+              "type": "artist",
+              "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+            }
+          ],
+          "available_markets": [
+            "CZ",
+            "DK",
+            "ES",
+            "FI",
+            "GB",
+            "GR",
+            "IE",
+            "IS",
+            "IT",
+            "NL",
+            "NO",
+            "PL",
+            "PT",
+            "SE"
+          ],
+          "external_urls": {
+            "spotify": "https://open.spotify.com/album/6F1kcMnBqD3Pw755WNhWKb"
+          },
+          "href": "https://api.spotify.com/v1/albums/6F1kcMnBqD3Pw755WNhWKb",
+          "id": "6F1kcMnBqD3Pw755WNhWKb",
+          "images": [
+            {
+              "height": 640,
+              "url": "https://i.scdn.co/image/90cfdfcf4b9ce09c64c477ef78a9eb4098344d1b",
+              "width": 640
+            },
+            {
+              "height": 300,
+              "url": "https://i.scdn.co/image/ff5ed399086d85c5e5b08c6fab0494a2a08cc57f",
+              "width": 300
+            },
+            {
+              "height": 64,
+              "url": "https://i.scdn.co/image/db284a5f6148188ef991ec52c71c1f324fd349da",
+              "width": 64
+            }
+          ],
+          "name": "Miracle",
+          "release_date": "2019-10-25",
+          "release_date_precision": "day",
+          "total_tracks": 3,
+          "type": "album",
+          "uri": "spotify:album:6F1kcMnBqD3Pw755WNhWKb"
+        },
+        "artists": [
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+            },
+            "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+            "id": "37J1PlAkhRK7yrZUtqaUpQ",
+            "name": "Caravan Palace",
+            "type": "artist",
+            "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+          },
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/4eFImh8D3F15dtZk0JQlpT"
+            },
+            "href": "https://api.spotify.com/v1/artists/4eFImh8D3F15dtZk0JQlpT",
+            "id": "4eFImh8D3F15dtZk0JQlpT",
+            "name": "Fakear",
+            "type": "artist",
+            "uri": "spotify:artist:4eFImh8D3F15dtZk0JQlpT"
+          }
+        ],
+        "available_markets": [
+          "CZ",
+          "DK",
+          "ES",
+          "FI",
+          "GB",
+          "GR",
+          "IE",
+          "IS",
+          "IT",
+          "NL",
+          "NO",
+          "PL",
+          "PT",
+          "SE"
+        ],
+        "disc_number": 1,
+        "duration_ms": 246270,
+        "explicit": false,
+        "external_ids": {
+          "isrc": "FR9W11909437"
+        },
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/0kpimD1suHW0eCUieO7Rdl"
+        },
+        "href": "https://api.spotify.com/v1/tracks/0kpimD1suHW0eCUieO7Rdl",
+        "id": "0kpimD1suHW0eCUieO7Rdl",
+        "is_local": false,
+        "name": "Miracle (Fakear Remix)",
+        "popularity": 28,
+        "preview_url": "https://p.scdn.co/mp3-preview/509752ba016a05e50fb3933672820a19559cfc20?cid=774b29d4f13844c495f206cafdad9c86",
+        "track_number": 2,
+        "type": "track",
+        "uri": "spotify:track:0kpimD1suHW0eCUieO7Rdl"
+      },
+      {
+        "album": {
+          "album_type": "single",
+          "artists": [
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+              },
+              "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+              "id": "37J1PlAkhRK7yrZUtqaUpQ",
+              "name": "Caravan Palace",
+              "type": "artist",
+              "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+            }
+          ],
+          "available_markets": [
+            "CZ",
+            "DK",
+            "ES",
+            "FI",
+            "GB",
+            "GR",
+            "IE",
+            "IS",
+            "IT",
+            "NL",
+            "NO",
+            "PL",
+            "PT",
+            "SE"
+          ],
+          "external_urls": {
+            "spotify": "https://open.spotify.com/album/6F1kcMnBqD3Pw755WNhWKb"
+          },
+          "href": "https://api.spotify.com/v1/albums/6F1kcMnBqD3Pw755WNhWKb",
+          "id": "6F1kcMnBqD3Pw755WNhWKb",
+          "images": [
+            {
+              "height": 640,
+              "url": "https://i.scdn.co/image/90cfdfcf4b9ce09c64c477ef78a9eb4098344d1b",
+              "width": 640
+            },
+            {
+              "height": 300,
+              "url": "https://i.scdn.co/image/ff5ed399086d85c5e5b08c6fab0494a2a08cc57f",
+              "width": 300
+            },
+            {
+              "height": 64,
+              "url": "https://i.scdn.co/image/db284a5f6148188ef991ec52c71c1f324fd349da",
+              "width": 64
+            }
+          ],
+          "name": "Miracle",
+          "release_date": "2019-10-25",
+          "release_date_precision": "day",
+          "total_tracks": 3,
+          "type": "album",
+          "uri": "spotify:album:6F1kcMnBqD3Pw755WNhWKb"
+        },
+        "artists": [
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/37J1PlAkhRK7yrZUtqaUpQ"
+            },
+            "href": "https://api.spotify.com/v1/artists/37J1PlAkhRK7yrZUtqaUpQ",
+            "id": "37J1PlAkhRK7yrZUtqaUpQ",
+            "name": "Caravan Palace",
+            "type": "artist",
+            "uri": "spotify:artist:37J1PlAkhRK7yrZUtqaUpQ"
+          },
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/4TIrC99WSg0tOtBCGDjMRY"
+            },
+            "href": "https://api.spotify.com/v1/artists/4TIrC99WSg0tOtBCGDjMRY",
+            "id": "4TIrC99WSg0tOtBCGDjMRY",
+            "name": "Boogie Belgique",
+            "type": "artist",
+            "uri": "spotify:artist:4TIrC99WSg0tOtBCGDjMRY"
+          }
+        ],
+        "available_markets": [
+          "CZ",
+          "DK",
+          "ES",
+          "FI",
+          "GB",
+          "GR",
+          "IE",
+          "IS",
+          "IT",
+          "NL",
+          "NO",
+          "PL",
+          "PT",
+          "SE"
+        ],
+        "disc_number": 1,
+        "duration_ms": 218969,
+        "explicit": false,
+        "external_ids": {
+          "isrc": "FR9W11908486"
+        },
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/0MK22J1lr5xgNae4XaHvWx"
+        },
+        "href": "https://api.spotify.com/v1/tracks/0MK22J1lr5xgNae4XaHvWx",
+        "id": "0MK22J1lr5xgNae4XaHvWx",
+        "is_local": false,
+        "name": "Miracle (Boogie Belgique Remix)",
+        "popularity": 19,
+        "preview_url": "https://p.scdn.co/mp3-preview/d01632515b0e66277cd49675cbc39b96901df376?cid=774b29d4f13844c495f206cafdad9c86",
+        "track_number": 3,
+        "type": "track",
+        "uri": "spotify:track:0MK22J1lr5xgNae4XaHvWx"
+      }
+    ],
+    "limit": 20,
+    "next": null,
+    "offset": 0,
+    "previous": null,
+    "total": 6
+  }
+}

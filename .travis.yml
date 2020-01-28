@@ -1,0 +1,11 @@
+language: python
+python:
+  - "3.8"
+  - "3.8-dev"
+  - "nightly"
+install:
+  - pip3 install -r requirements.txt
+  - pip3 install -e .[dev]
+script:
+  - pytest --cov-config=.coveragerc --cov=swaglyrics_backend tests/
+  - codecov
