@@ -1,4 +1,9 @@
 # swaglyrics-backend
+
+[![Discord Server](https://badgen.net/badge/discord/join%20chat/7289DA?icon=discord)](https://discord.gg/DSUZGK4)
+[![Build Status](https://travis-ci.com/SwagLyrics/swaglyrics-backend.svg?branch=master)](https://travis-ci.com/SwagLyrics/swaglyrics-backend)
+[![codecov](https://codecov.io/gh/SwagLyrics/swaglyrics-backend/branch/master/graph/badge.svg)](https://codecov.io/gh/SwagLyrics/swaglyrics-backend)
+
 Server side code to make an issue on the [main repo](https://github.com/SwagLyrics/SwagLyrics-For-Spotify) when the 
 program encounters a song it can't fetch lyrics for. 
 

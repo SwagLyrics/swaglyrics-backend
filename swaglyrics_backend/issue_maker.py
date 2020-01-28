@@ -53,9 +53,10 @@ asrg = re.compile(r'[A-Za-z\s]+')
 
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{username}.mysql.pythonanywhere-services." \
                           "com/{username}${databasename}".format(
-                                                                 username=username,
-                                                                 password=os.environ['DB_PWD'],
-                                                                 databasename="strippers")
+                                                                username=username,
+                                                                password=os.environ['DB_PWD'],
+                                                                databasename="strippers"
+                                                            )
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 280
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -408,9 +409,6 @@ def github_webhook():
                 cnt = del_line(song, artist)
                 return f'Deleted {cnt} instances from unsupported.txt'
 
-        # Respond to star event by posting on discord in #gh-activity on SwagLyrics guild
-        elif event == "star":
-            pass
         else:
             return json.dumps({'msg': 'Wrong event type'})
 
@@ -459,9 +457,13 @@ def latest_version():
     return __version__
 
 
-# test path to assist in testing of server
+# test path to check if changes propagate and env variables work
 @app.route('/test')
 def swag():
+    """
+    there are two env vars configured to test this route, BLAZEIT and SWAG.
+    the values are changed and this route is checked to see if changes are live.
+    """
     return os.environ['BLAZEIT']
 
 
@@ -479,3 +481,7 @@ def hello():
     with open('unsupported.txt', 'r', encoding="utf-8") as f:
         data = f.readlines()
     return render_template('hello.html', unsupported_songs=data)
+
+
+if __name__ == "__main__":
+    app.run()
