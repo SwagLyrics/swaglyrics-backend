@@ -88,7 +88,7 @@ class Lyrics(db.Model):
 
 def get_github_token():
     """
-    Returns the github auth token, updates if it has expired.
+    Returns the github auth token, update if expired.
     :return: github token
     """
     global gh_token, gh_token_expiry
@@ -108,7 +108,7 @@ def get_github_token():
 
 def get_spotify_token():
     """
-    Return the spotify auth token, updates if it has expired.
+    Return the spotify auth token, update if expired.
     :return: spotify token
     """
     global spotify_token, spotify_token_expiry
@@ -262,6 +262,39 @@ def del_line(song, artist):
             f.write(line)
     # return number of lines deleted
     return cnt
+
+
+def discord_deploy(payload):
+    """
+    sends message to Discord server when deploy from github to backend successful.
+    """
+    url = f"https://discordapp.com/api/webhooks/{os.environ['DISCORD_URL']}"
+    head_commit = payload["head_commit"]
+    author = head_commit["author"]
+    json = {
+        "embeds": [{
+            "title": head_commit["message"].split('\n')[0],  # split in case commits squashed
+            "description": f"Updated [PythonAnywhere server](https://api.swaglyrics.dev) to commit "
+                           f"`{head_commit['id']}`.",
+            "url": head_commit["url"],
+            "thumbnail": {
+                "url": "https://avatars2.githubusercontent.com/u/48502066?v=4"
+            },
+            "timestamp": head_commit["timestamp"],
+            "color": 1501879,
+            "author": {
+                "name": author["name"],
+                "url": f"https://github.com/{author['username']}",
+                "icon_url": f"https://github.com/{author['username']}.png",
+            }
+        }]
+    }
+
+    r = requests.post(url, json=json)
+    if r.status_code == requests.codes.ok:
+        print("sent discord message")
+    else:
+        print(f"discord message send failed: {r.status_code}")
 
 
 # ------------------- routes begin here ------------------- #
@@ -446,6 +479,8 @@ def update_webhook():
         commit_hash = pull_info[0].commit.hexsha
         build_commit = f'build_commit = "{commit_hash}"'
         print(f'{build_commit}')
+        if commit_hash == payload["after"]:
+            discord_deploy(payload)
         return 'Updated PythonAnywhere server to commit {commit}'.format(commit=commit_hash)
     else:
         return json.dumps({'msg': "Wrong event type"})
