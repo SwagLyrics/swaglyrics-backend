@@ -499,7 +499,7 @@ def swag():
     there are two env vars configured to test this route, BLAZEIT and SWAG.
     the values are changed and this route is checked to see if changes are live.
     """
-    return os.environ['BLAZEIT']
+    return os.environ['SWAG']
 
 
 # Route to test rate limiter is functioning correctly
