@@ -268,7 +268,8 @@ def discord_deploy(payload):
     """
     sends message to Discord server when deploy from github to backend successful.
     """
-    url = f"https://discordapp.com/api/webhooks/{os.environ['DISCORD_URL']}"
+    # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
+    url = f"https://discordapp.com/api/webhooks/{os.environ['DISCORD_URL']}?wait=true"
     head_commit = payload["head_commit"]
     author = head_commit["author"]
     json = {
@@ -480,7 +481,10 @@ def update_webhook():
         build_commit = f'build_commit = "{commit_hash}"'
         print(f'{build_commit}')
         if commit_hash == payload["after"]:
+            # since payload is from github and pull info is what we pulled from git
             discord_deploy(payload)
+        else:
+            print(f'weird mismatch: {commit_hash=} {payload["after"]=}')
         return 'Updated PythonAnywhere server to commit {commit}'.format(commit=commit_hash)
     else:
         return json.dumps({'msg': "Wrong event type"})
