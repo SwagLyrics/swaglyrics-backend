@@ -75,7 +75,8 @@ class TestIssueMaker(TestBase):
     @patch('requests.get', return_value=Response())
     def test_that_check_song_returns_true(self, mock_get, mock_response, spotify_token):
         from swaglyrics_backend.issue_maker import check_song
-        mock_response.return_value = get_correct_spotify_search_json('correct_spotify_data.json')
+        mock_response.return_value = get_correct_spotify_search_json(
+            'correct_spotify_data.json')
         self.assertTrue(check_song("Miracle", "Caravan Palace"))
 
     @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
@@ -97,9 +98,11 @@ class TestIssueMaker(TestBase):
         response = Response()
         response.status_code = 200
         mock_get.return_value = response
-        mock_response.return_value = get_correct_spotify_search_json('sample_genius_data.json')
+        mock_response.return_value = get_correct_spotify_search_json(
+            'sample_genius_data.json')
         from swaglyrics_backend.issue_maker import genius_stripper
-        self.assertEqual(genius_stripper("Miracle", "Caravan Palace"), "Caravan-palace-miracle")
+        self.assertEqual(genius_stripper(
+            "Miracle", "Caravan Palace"), "Caravan-palace-miracle")
 
     def test_that_title_mismatches(self):
         from swaglyrics_backend.issue_maker import is_title_mismatched
@@ -152,6 +155,31 @@ class TestIssueMaker(TestBase):
             self.assertEqual(response, "Removed 1 instances of Supersonics by Caravan Palace from "
                                        "unsupported.txt successfully.")
 
+    def test_update(self):
+        from swaglyrics import __version__
+        from swaglyrics_backend.issue_maker import update
+        from flask import Flask
+
+        app = Flask(__name__)
+        with app.test_request_context('/'):
+            with app.test_client() as c:
+                app.config['TESTING'] = True
+
+                c.post('/unsupported', data={'version': '0.9.0',
+                                             'song': 'Miracle',
+                                             'artist': 'Caravan Palace'})
+                generate_fake_unsupported()
+                self.assertEqual(
+                    update(), 'Please update SwagLyrics to the latest version to get better support :)')
+
+                c.post('/unsupported', data={'version': str(__version__),
+                                             'song': 'Miracle',
+                                             'artist': 'Caravan Palace'})
+                """Test correct output given song and artist that exist in unsupported.txt"""
+                self.assertEqual(update(),
+                                 "Issue already exists on the GitHub repo. "
+                                 "\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues")
+
 
 def get_correct_spotify_search_json(filename):
     import flask
@@ -162,4 +190,4 @@ def get_correct_spotify_search_json(filename):
 
 def generate_fake_unsupported():
     with open('unsupported.txt', 'w') as f:
-        f.write('Miracle by Caravan Palace\n' + 'Supersonics by Caravan Palace\n')
+        f.write('Miracle by Caravan Palace\nSupersonics by Caravan Palace\n')
