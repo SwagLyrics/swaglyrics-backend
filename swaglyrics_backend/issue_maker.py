@@ -140,7 +140,7 @@ def genius_stripper(song, artist):
     print(f'getting stripper from Genius for {title}')
     url = 'https://api.genius.com/search'
     headers = {"Authorization": "Bearer {token}".format(token=os.environ['GENIUS'])}
-    song = spc.sub('', aug.sub('', song))  # strip extra info from song and combine spaces
+    song = spc.sub(' ', aug.sub('', song))  # strip extra info from song and combine spaces
     print(f'stripped song: {song}')
     params = {'q': f'{song} {artist}'}
     r = requests.get(url, params=params, headers=headers)
