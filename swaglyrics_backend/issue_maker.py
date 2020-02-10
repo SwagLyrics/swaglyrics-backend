@@ -486,7 +486,7 @@ def update_webhook():
             discord_deploy(payload)
         else:
             print(f'weird mismatch: {commit_hash=} {payload["after"]=}')
-        return 'Updated PythonAnywhere server to commit {commit}'.format(commit=commit_hash)
+        return f'Updated PythonAnywhere server to commit {commit_hash}'
     else:
         return json.dumps({'msg': "Wrong event type"})
 
