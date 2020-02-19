@@ -72,7 +72,7 @@ def request_from_github(abort_code=418):
                     if ip_address(request_ip) in ip_network(block):
                         break
                 else:
-                    print("Unauthorized attempt to deploy by IP {ip}".format(ip=request_ip))
+                    print(f"Unauthorized attempt to deploy by IP {request_ip}")
                     abort(abort_code)
                 return f(*args, **kwargs)
 

@@ -139,7 +139,7 @@ def genius_stripper(song, artist):
     title = f'{song} by {artist}'
     print(f'getting stripper from Genius for {title}')
     url = 'https://api.genius.com/search'
-    headers = {"Authorization": "Bearer {token}".format(token=os.environ['GENIUS'])}
+    headers = {"Authorization": f"Bearer {os.environ['GENIUS']}"}
     song = spc.sub(' ', aug.sub('', song))  # strip extra info from song and combine spaces
     print(f'stripped song: {song}')
     params = {'q': f'{song} {artist}'}
@@ -341,8 +341,8 @@ def update():
             if issue['status_code'] == 201:
                 print(f'Created issue on the GitHub repo for {song} by {artist}.')
                 return 'Lyrics for that song may not exist on Genius. ' \
-                       'Created issue on the GitHub repo for {song} by {artist} to investigate ' \
-                       'further. \n{link}'.format(song=song, artist=artist, link=issue['link'])
+                       f'Created issue on the GitHub repo for {song} by {artist} to investigate ' \
+                       f'further. \n{issue["link"]}'
             else:
                 return f'Logged {song} by {artist} in the server.'
 
@@ -359,7 +359,7 @@ def get_stripper():
         return lyrics.stripper
     g_stripper = genius_stripper(song, artist)
     if g_stripper:
-        print('using genius_stripper: {}'.format(g_stripper))
+        print(f'using genius_stripper: {g_stripper}')
         return g_stripper
     else:
         print('did not find stripper to return :(')
