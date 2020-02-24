@@ -2,13 +2,16 @@ import json
 import os
 import re
 import time
+
 import git
 import requests
 from flask import Flask, request, abort, render_template
 from flask_limiter import Limiter
 from flask_limiter.util import get_ipaddr
 from flask_sqlalchemy import SQLAlchemy
+
 from datetime import datetime as dt
+
 from requests.auth import HTTPBasicAuth
 from swaglyrics import __version__
 from swaglyrics.cli import stripper, spc
@@ -24,6 +27,7 @@ limiter = Limiter(
     key_func=get_ipaddr,
     default_limits=["1000 per day"]
 )
+
 
 # database env variables
 username = os.environ['USERNAME']
@@ -221,7 +225,8 @@ def create_issue(song, artist, version, stripper='not supported yet'):
 
 def check_song(song, artist):
     """
-    Check if song, artist pair exist on Spotify or not using the Spotify API.
+    Check if song, artist pair exist on Spotify or not using the Spotify API. Also checks if song is instrumental
+    in which case it would not have lyrics.
 
     This is done to verify if the data received is legit or not. An exact comparison is done since the data is
     supposed to be from Spotify in the first place.
@@ -237,12 +242,28 @@ def check_song(song, artist):
     except KeyError:
         return False
     if data:
-        print(data[0]['artists'][0]['name'], data[0]['name'])
-        if data[0]['name'] == song and data[0]['artists'][0]['name'] == artist:
+        track = data[0]
+        print(track['artists'][0]['name'], track['name'])
+        if track['name'] == song and track['artists'][0]['name'] == artist:
             print(f'{song} and {artist} legit on Spotify')
-            return True
+            if not check_song_instrumental(track, headers):
+                return True
+            print(f'{song} by {artist} seems to be instrumental')
     else:
         print(f'{song} and {artist} don\'t seem legit.')
+
+    return False
+
+
+def check_song_instrumental(track, headers):
+    """
+    Helper function to determine if song is instrumental using spotify audio features API.
+
+    Returns true if it considers a song to be instrumental.
+    """
+    metadata = requests.get(f'https://api.spotify.com/v1/audio-features/{track["id"]}', headers=headers).json()
+    if metadata["instrumentalness"] > 0.45 and metadata["speechiness"] < 0.04:
+        return True
     return False
 
 

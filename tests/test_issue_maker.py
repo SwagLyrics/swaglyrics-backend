@@ -71,12 +71,14 @@ class TestIssueMaker(TestBase):
         self.assertFalse(check_song("Miracle", "Caravan Palace"))
 
     @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
-    @patch('requests.Response.json')
+    @patch('requests.Response.json', return_value={'error', 'yes'})
     @patch('requests.get', return_value=Response())
-    def test_that_check_song_returns_true(self, mock_get, mock_response, spotify_token):
+    @patch('swaglyrics_backend.issue_maker.check_song_instrumental', return_value=False)
+    def test_that_check_song_returns_true(self, check_instrumental, mock_get, mock_response, spotify_token):
         from swaglyrics_backend.issue_maker import check_song
         mock_response.return_value = get_correct_spotify_search_json(
             'correct_spotify_data.json')
+
         self.assertTrue(check_song("Miracle", "Caravan Palace"))
 
     @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
