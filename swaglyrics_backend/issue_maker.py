@@ -293,7 +293,7 @@ def discord_deploy(payload):
     sends message to Discord server when deploy from github to backend successful.
     """
     # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
-    url = f"https://discordapp.com/api/webhooks/{os.environ['DISCORD_URL']}?wait=true"
+    url = f"https://discord.com/api/webhooks/{os.environ['DISCORD_URL']}?wait=true"
     head_commit = payload["head_commit"]
     author = head_commit["author"]
     json = {
