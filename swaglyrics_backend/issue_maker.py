@@ -91,7 +91,7 @@ class Lyrics(db.Model):
 
 # ------------------- important functions begin here ------------------- #
 
-def get_github_token():
+def get_github_token() -> str:
     """
     Returns the github auth token, update if expired.
     :return: github token
@@ -111,7 +111,7 @@ def get_github_token():
     return gh_token
 
 
-def get_spotify_token():
+def get_spotify_token() -> str:
     """
     Return the spotify auth token, update if expired.
     :return: spotify token
@@ -130,7 +130,7 @@ def get_spotify_token():
     return spotify_token
 
 
-def genius_stripper(song, artist):
+def genius_stripper(song: str, artist: str):
     """
     Try to obtain a stripper via the Genius API, given song and artist.
 
@@ -183,7 +183,7 @@ def genius_stripper(song, artist):
             return None
 
 
-def is_title_mismatched(words, full_title, max_err):
+def is_title_mismatched(words, full_title: str, max_err: int) -> bool:
     err_cnt = 0
     for word in words:
         if word.lower() not in full_title.lower():
@@ -194,7 +194,7 @@ def is_title_mismatched(words, full_title, max_err):
     return False
 
 
-def create_issue(song, artist, version, stripper='not supported yet'):
+def create_issue(song: str, artist: str, version: str, stripper='not supported yet'):
     """
     Create an issue on the SwagLyrics for Spotify repo when a song, artist pair is not supported.
     :param song: the song name
@@ -223,7 +223,7 @@ def create_issue(song, artist, version, stripper='not supported yet'):
     }
 
 
-def check_song(song, artist):
+def check_song(song: str, artist: str) -> bool:
     """
     Check if song, artist pair exist on Spotify or not using the Spotify API. Also checks if song is instrumental
     in which case it would not have lyrics.
@@ -267,13 +267,13 @@ def check_song_instrumental(track, headers):
     return False
 
 
-# def check_stripper(song, artist):
-#     # check if song has a lyrics page on genius
-#     r = requests.get(f'https://genius.com/{stripper(song, artist)}-lyrics')
-#     return r.status_code == requests.codes.ok
+def check_stripper(song, artist):
+    # check if song has a lyrics page on genius
+    r = requests.get(f'https://genius.com/{stripper(song, artist)}-lyrics')
+    return r.status_code == requests.codes.ok
 
 
-def del_line(song, artist):
+def del_line(song: str, artist: str) -> int:
     # delete song and artist from unsupported.txt
     with open('unsupported.txt', 'r') as f:
         lines = f.readlines()
@@ -288,7 +288,7 @@ def del_line(song, artist):
     return cnt
 
 
-def discord_deploy(payload):
+def discord_deploy(payload) -> None:
     """
     sends message to Discord server when deploy from github to backend successful.
     """
@@ -353,7 +353,7 @@ def update():
             return f'Lyrics for {song} by {artist} may not exist on Genius.\n' + gh_issue_text
 
         # check if song exists on spotify and does not have lyrics on genius
-        if check_song(song, artist):
+        if check_song(song, artist) and not check_stripper(song, artist):
             with open('unsupported.txt', 'a', encoding='utf-8') as f:
                 f.write(f'{song} by {artist}\n')
 
