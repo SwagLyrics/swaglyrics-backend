@@ -43,7 +43,8 @@ spotify_token_expiry = 0
 
 gh_issue_text = "If you feel there's an error, open a ticket at " \
                 "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
-update_text = 'Please update SwagLyrics to the latest version to get better support :)'
+# update_text = 'Please update SwagLyrics to the latest version to get better support :)'
+update_text = 'Please update SwagLyrics to the latest version (v1.2.0), it contains a hotfix for Genius A/B testing :)'
 
 # genius stripper regex
 alg = re.compile(r'[^\sa-zA-Z0-9]+')
@@ -339,7 +340,7 @@ def update():
             return update_text
 
         print(song, artist, stripped, version)
-        if version < '1.1.1':
+        if version < '1.2.0':
             return update_text
 
         with open('unsupported.txt', 'r', encoding='utf-8') as f:
