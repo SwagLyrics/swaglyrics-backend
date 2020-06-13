@@ -2,6 +2,8 @@ import json
 import os
 import re
 import time
+from datetime import datetime as dt
+from typing import Optional, List, Dict, Any
 
 import git
 import requests
@@ -9,9 +11,6 @@ from flask import Flask, request, abort, render_template
 from flask_limiter import Limiter
 from flask_limiter.util import get_ipaddr
 from flask_sqlalchemy import SQLAlchemy
-
-from datetime import datetime as dt
-
 from requests.auth import HTTPBasicAuth
 from swaglyrics import __version__
 from swaglyrics.cli import stripper, spc
@@ -28,6 +27,8 @@ limiter = Limiter(
     default_limits=["1000 per day"]
 )
 
+# define a JSON-like Dict type hint
+JSONDict = Dict[str, Any]
 
 # database env variables
 username = os.environ['USERNAME']
@@ -131,7 +132,7 @@ def get_spotify_token() -> str:
     return spotify_token
 
 
-def genius_stripper(song: str, artist: str):
+def genius_stripper(song: str, artist: str) -> Optional[str]:
     """
     Try to obtain a stripper via the Genius API, given song and artist.
 
@@ -184,7 +185,7 @@ def genius_stripper(song: str, artist: str):
             return None
 
 
-def is_title_mismatched(words, full_title: str, max_err: int) -> bool:
+def is_title_mismatched(words: List[str], full_title: str, max_err: int) -> bool:
     err_cnt = 0
     for word in words:
         if word.lower() not in full_title.lower():
@@ -195,7 +196,7 @@ def is_title_mismatched(words, full_title: str, max_err: int) -> bool:
     return False
 
 
-def create_issue(song: str, artist: str, version: str, stripper='not supported yet'):
+def create_issue(song: str, artist: str, version: str, stripper: str = 'not supported yet') -> JSONDict:
     """
     Create an issue on the SwagLyrics for Spotify repo when a song, artist pair is not supported.
     :param song: the song name
@@ -256,7 +257,7 @@ def check_song(song: str, artist: str) -> bool:
     return False
 
 
-def check_song_instrumental(track, headers):
+def check_song_instrumental(track: JSONDict, headers: Dict[str, str]) -> bool:
     """
     Helper function to determine if song is instrumental using spotify audio features API.
 
@@ -268,7 +269,7 @@ def check_song_instrumental(track, headers):
     return False
 
 
-def check_stripper(song, artist):
+def check_stripper(song: str, artist: str) -> bool:
     # check if song has a lyrics page on genius
     r = requests.get(f'https://genius.com/{stripper(song, artist)}-lyrics')
     return r.status_code == requests.codes.ok
@@ -289,7 +290,7 @@ def del_line(song: str, artist: str) -> int:
     return cnt
 
 
-def discord_deploy(payload) -> None:
+def discord_deploy(payload: JSONDict) -> None:
     """
     sends message to Discord server when deploy from github to backend successful.
     """
