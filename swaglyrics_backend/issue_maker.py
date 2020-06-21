@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import time
@@ -19,6 +20,10 @@ from swaglyrics_backend.utils import request_from_github, validate_request, get_
 
 # start flask app
 app = Flask(__name__)
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
+                    datefmt='%H:%M:%S')
 
 # request limiter base rules
 limiter = Limiter(
@@ -527,6 +532,7 @@ def swag():
     there are two env vars configured to test this route, BLAZEIT and SWAG.
     the values are changed and this route is checked to see if changes are live.
     """
+    logging.info(f'this is a test. {os.environ["SWAG"]}')
     return os.environ['SWAG']
 
 
