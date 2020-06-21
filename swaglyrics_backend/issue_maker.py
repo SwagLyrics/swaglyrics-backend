@@ -169,10 +169,10 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
             hits = data['response']['hits']
             for hit in hits:
                 full_title = hit['result']['full_title']
-                logging.info(f'{full_title=}')
+                logging.info(f'    full title: {full_title}')
                 # remove punctuation before comparison
                 full_title = re.sub(alg, '', full_title)
-                logging.info(f'stripped full title: {full_title}')
+                logging.info(f'   stripped full title: {full_title}')
 
                 if not is_title_mismatched(words, full_title, max_err):
                     # return stripper as no mismatch
