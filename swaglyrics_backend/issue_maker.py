@@ -21,9 +21,7 @@ from swaglyrics_backend.utils import request_from_github, validate_request, get_
 # start flask app
 app = Flask(__name__)
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
-                    datefmt='%H:%M:%S')
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 # request limiter base rules
 limiter = Limiter(
@@ -106,15 +104,15 @@ def get_github_token() -> str:
     global gh_token, gh_token_expiry
     # 3 minutes buffer
     if gh_token_expiry - 180 > time.time():
-        print(f"using github token: {gh_token[:22]}")
+        logging.info(f"using github token: {gh_token[:22]}")
         return gh_token
-    print("updating github token")
+    logging.info("updating github token")
     private_pem = os.environ['PRIVATE_PEM']
     jwt = get_jwt(os.environ['APP_ID'], private_pem)
     response = get_installation_access_token(jwt, os.environ['INST_ID']).json()
     gh_token = response["token"]
     gh_token_expiry = dt.strptime(response["expires_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp()
-    print(f"github token updated: {gh_token[:22]}")
+    logging.info(f"github token updated: {gh_token[:22]}")
     return gh_token
 
 
@@ -126,14 +124,14 @@ def get_spotify_token() -> str:
     global spotify_token, spotify_token_expiry
     # check if token expired ( - 300 to add buffer of 5 minutes)
     if spotify_token_expiry - 300 > time.time():
-        print(f'using spotify token: {spotify_token[:41]}')
+        logging.info(f'using spotify token: {spotify_token[:41]}')
         return spotify_token
     r = requests.post('https://accounts.spotify.com/api/token', data={
         'grant_type': 'client_credentials'}, auth=HTTPBasicAuth(os.environ['C_ID'], os.environ['SECRET']))
     spotify_token = r.json()['access_token']
     # token valid for an hour
     spotify_token_expiry = time.time() + 3600
-    print(f'updated spotify token: {spotify_token[:41]}')
+    logging.info(f'updated spotify token: {spotify_token[:41]}')
     return spotify_token
 
 
@@ -148,22 +146,22 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
     :return: stripper
     """
     title = f'{song} by {artist}'
-    print(f'getting stripper from Genius for {title}')
+    logging.info(f'getting stripper from Genius for {title}')
     url = 'https://api.genius.com/search'
     headers = {"Authorization": f"Bearer {os.environ['GENIUS']}"}
     song = spc.sub(' ', aug.sub('', song))  # strip extra info from song and combine spaces
-    print(f'stripped song: {song}')
+    logging.info(f'stripped song: {song}')
     params = {'q': f'{song} {artist}'}
     r = requests.get(url, params=params, headers=headers)
     # remove punctuation before comparison
     title = re.sub(alg, '', title)
-    print(f'stripped title: {title}')
+    logging.info(f'stripped title: {title}')
 
     words = title.split()
     max_err = len(words) // 2
 
     # allow half length mismatch
-    print(f'max_err is set to {max_err}')
+    logging.info(f'max_err is set to {max_err}')
 
     if r.status_code == 200:
         data = r.json()
@@ -171,22 +169,22 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
             hits = data['response']['hits']
             for hit in hits:
                 full_title = hit['result']['full_title']
-                print(f'full title: {full_title}')
+                logging.info(f'{full_title=}')
                 # remove punctuation before comparison
                 full_title = re.sub(alg, '', full_title)
-                print(f'stripped full title: {full_title}')
+                logging.info(f'stripped full title: {full_title}')
 
                 if not is_title_mismatched(words, full_title, max_err):
                     # return stripper as no mismatch
                     path = gstr.search(hit['result']['path'])
                     try:
                         stripper = path.group()
-                        print(f'stripper found: {stripper}')
+                        logging.info(f'stripper found: {stripper}')
                         return stripper
                     except AttributeError:
-                        print(f'Path did not end in lyrics: {path}')
+                        logging.warning(f'Path did not end in lyrics: {path}')
 
-            print('stripper not found')
+            logging.info('stripper not found')
             return None
 
 
@@ -195,7 +193,7 @@ def is_title_mismatched(words: List[str], full_title: str, max_err: int) -> bool
     for word in words:
         if word.lower() not in full_title.lower():
             err_cnt += 1
-            print(f'broke on {word}')
+            logging.debug(f'broke on {word}')
             if err_cnt > max_err:
                 return True
     return False
@@ -250,14 +248,14 @@ def check_song(song: str, artist: str) -> bool:
         return False
     if data:
         track = data[0]
-        print(track['artists'][0]['name'], track['name'])
+        logging.info(f"song: {track['name']}, artist: {track['artists'][0]['name']}")
         if track['name'] == song and track['artists'][0]['name'] == artist:
-            print(f'{song} and {artist} legit on Spotify')
+            logging.info(f'{song} and {artist} legit on Spotify')
             if not check_song_instrumental(track, headers):
                 return True
-            print(f'{song} by {artist} seems to be instrumental')
+            logging.info(f'{song} by {artist} seems to be instrumental')
     else:
-        print(f'{song} and {artist} don\'t seem legit.')
+        logging.info(f'{song} and {artist} don\'t seem legit.')
 
     return False
 
@@ -324,9 +322,9 @@ def discord_deploy(payload: JSONDict) -> None:
 
     r = requests.post(url, json=json)
     if r.status_code == requests.codes.ok:
-        print("sent discord message")
+        logging.info("sent discord message")
     else:
-        print(f"discord message send failed: {r.status_code}")
+        logging.error(f"discord message send failed: {r.status_code}")
 
 
 # ------------------- routes begin here ------------------- #
@@ -345,7 +343,7 @@ def update():
         except KeyError:
             return update_text
 
-        print(song, artist, stripped, version)
+        logging.info(f"{song=}, {artist=}, {stripped=}, {version=}")
         if version < '1.2.0':
             return update_text
 
@@ -367,7 +365,7 @@ def update():
             issue = create_issue(song, artist, version, stripped)
 
             if issue['status_code'] == 201:
-                print(f'Created issue on the GitHub repo for {song} by {artist}.')
+                logging.info(f'Created issue on the GitHub repo for {song} by {artist}.')
                 return 'Lyrics for that song may not exist on Genius. ' \
                        f'Created issue on the GitHub repo for {song} by {artist} to investigate ' \
                        f'further. \n{issue["link"]}'
@@ -387,10 +385,10 @@ def get_stripper():
         return lyrics.stripper
     g_stripper = genius_stripper(song, artist)
     if g_stripper:
-        print(f'using genius_stripper: {g_stripper}')
+        logging.info(f'using genius_stripper: {g_stripper}')
         return g_stripper
     else:
-        print('did not find stripper to return :(')
+        logging.info('did not find stripper to return :(')
         return '', 404
 
 
@@ -468,7 +466,7 @@ def github_webhook():
                 title = wdt.match(title)
                 song = title.group(1)
                 artist = title.group(2)
-                print(f'{song} by {artist} is to be deleted.')
+                logging.info(f'{song} by {artist} is to be deleted.')
                 cnt = del_line(song, artist)
                 return f'Deleted {cnt} instances from unsupported.txt'
 
@@ -508,12 +506,12 @@ def update_webhook():
 
         commit_hash = pull_info[0].commit.hexsha
         build_commit = f'build_commit = "{commit_hash}"'
-        print(f'{build_commit}')
+        logging.info(f'{build_commit}')
         if commit_hash == payload["after"]:
             # since payload is from github and pull info is what we pulled from git
             discord_deploy(payload)
         else:
-            print(f'weird mismatch: {commit_hash=} {payload["after"]=}')
+            logging.error(f'weird mismatch: {commit_hash=} {payload["after"]=}')
         return f'Updated PythonAnywhere server to commit {commit_hash}'
     else:
         return json.dumps({'msg': "Wrong event type"})
@@ -532,8 +530,9 @@ def swag():
     there are two env vars configured to test this route, BLAZEIT and SWAG.
     the values are changed and this route is checked to see if changes are live.
     """
-    logging.info(f'this is a test. {os.environ["SWAG"]}')
-    return os.environ['SWAG']
+    env_var = os.environ['SWAG']
+    logging.info(f'this is a test. {env_var=}')
+    return env_var
 
 
 # Route to test rate limiter is functioning correctly
