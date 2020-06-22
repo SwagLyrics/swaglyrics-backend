@@ -16,7 +16,8 @@ from requests.auth import HTTPBasicAuth
 from swaglyrics import __version__
 from swaglyrics.cli import stripper, spc
 
-from swaglyrics_backend.utils import request_from_github, validate_request, get_jwt, get_installation_access_token
+from swaglyrics_backend.utils import request_from_github, validate_request, get_jwt, get_installation_access_token, \
+    log_args
 
 # start flask app
 app = Flask(__name__)
@@ -169,10 +170,10 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
             hits = data['response']['hits']
             for hit in hits:
                 full_title = hit['result']['full_title']
-                logging.info(f'    full title: {full_title}')
+                logging.info(f'\tfull title: {full_title}')
                 # remove punctuation before comparison
                 full_title = re.sub(alg, '', full_title)
-                logging.info(f'    stripped full title: {full_title}')
+                logging.info(f'\tstripped full title: {full_title}')
 
                 if not is_title_mismatched(words, full_title, max_err):
                     # return stripper as no mismatch
@@ -188,6 +189,7 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
             return None
 
 
+@log_args()
 def is_title_mismatched(words: List[str], full_title: str, max_err: int) -> bool:
     mismatch = [word for word in words if word.lower() not in full_title.lower()]
     logging.debug(f"broke on {mismatch}")

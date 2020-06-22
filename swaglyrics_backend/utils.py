@@ -4,7 +4,9 @@ import os
 import time
 import jwt
 from functools import wraps
+from inspect import signature
 from ipaddress import ip_address, ip_network
+from logging import getLogger, _nameToLevel
 
 import requests
 from flask import request, abort
@@ -80,6 +82,44 @@ def request_from_github(abort_code=418):
 
     return decorator
 
+
+def log_args(loglevel_name="INFO", max_chars=20):
+    """This decorator logs the arguments passed to a function before calling it.
+
+    Default loglevel is INFO and default argument truncation threshold is 20 character. If
+    you want to disable truncation, pass -1 instead.
+    """
+    if loglevel_name not in _nameToLevel:
+        raise ValueError(
+            f"'{loglevel_name}' is not a valid log level name. Please pick one of {[*_nameToLevel]} instead.")
+    loglevel = _nameToLevel[loglevel_name]
+
+    def outer(func):
+        logger = getLogger(func.__module__)
+        parameters = signature(func).parameters
+
+        @wraps(func)
+        def inner(*args, **kwargs):
+            # map arg- and kwarg-strings to their parameter names
+            parameter_map = (
+                    [[param[0], str(arg)] for arg, param in zip(args, parameters)] +
+                    [[name, str(value)] for name, value in kwargs.items()]
+            )
+            # truncate values, if necessary. this can probably be handled somewhat nicer.
+            for mapping in parameter_map:
+                if max_chars < 0:
+                    continue
+                if len(mapping[1]) > max_chars:
+                    mapping[1] = f"{mapping[1][:max_chars]} ..."
+            # build a string representing the call ...
+            parameter_string = ", ".join(f"{name}={value}" for name, value in parameter_map)
+            # ... and log it
+            logger.log(loglevel, f"{func.__name__}({parameter_string})")
+            return func(*args, **kwargs)
+
+        return inner
+
+    return outer
 # ------------------- authentication functions ------------------- #
 
 
