@@ -114,12 +114,12 @@ class TestIssueMaker(TestBase):
     def test_that_title_not_mismatches(self):
         from swaglyrics_backend.issue_maker import is_title_mismatched
         self.assertFalse(
-            is_title_mismatched({"Bohemian", "Rhapsody", "by", "Queen"}, "Bohemian Rhapsody by Queen", 2))
+            is_title_mismatched(["Bohemian", "Rhapsody", "by", "Queen"], "bohemian rhapsody by queen", 2))
 
     def test_that_title_not_mismatches_with_one_error(self):
         from swaglyrics_backend.issue_maker import is_title_mismatched
-        self.assertFalse(is_title_mismatched({"Bohemian", "Rhapsody", "2011", "by", "Queen"}, "Bohemian Rhapsody "
-                                                                                              "by Queen", 2))
+        self.assertFalse(is_title_mismatched(["BoHemIaN", "RhaPsoDy", "2011", "bY", "queen"], "bohemian RHAPSODY "
+                                                                                              "By QUEEN", 2))
 
     @patch('swaglyrics_backend.issue_maker.db')
     def test_that_add_stripper_adds_stripper(self, app_mock):

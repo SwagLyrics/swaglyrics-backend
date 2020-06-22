@@ -9,3 +9,8 @@ venv/
 .coverage
 
 swaglyrics_backend.egg-info/
+
+.vscode/
+
+build/
+dist/
