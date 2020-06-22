@@ -172,7 +172,7 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
                 logging.info(f'    full title: {full_title}')
                 # remove punctuation before comparison
                 full_title = re.sub(alg, '', full_title)
-                logging.info(f'   stripped full title: {full_title}')
+                logging.info(f'    stripped full title: {full_title}')
 
                 if not is_title_mismatched(words, full_title, max_err):
                     # return stripper as no mismatch
@@ -189,14 +189,9 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
 
 
 def is_title_mismatched(words: List[str], full_title: str, max_err: int) -> bool:
-    err_cnt = 0
-    for word in words:
-        if word.lower() not in full_title.lower():
-            err_cnt += 1
-            logging.debug(f'broke on {word}')
-            if err_cnt > max_err:
-                return True
-    return False
+    mismatch = [word for word in words if word.lower() not in full_title.lower()]
+    logging.debug(f"broke on {mismatch}")
+    return len(mismatch) > max_err
 
 
 def create_issue(song: str, artist: str, version: str, stripper: str = 'not supported yet') -> JSONDict:
