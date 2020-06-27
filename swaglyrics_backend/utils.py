@@ -114,7 +114,7 @@ def log_args(loglevel_name="INFO", max_chars=20):
             # build a string representing the call ...
             parameter_string = ", ".join(f"{name}={value}" for name, value in parameter_map)
             # ... and log it
-            logger.log(loglevel, f"{func.__name__}({parameter_string})")
+            logger.log(loglevel, f"    {func.__name__}({parameter_string})")
             return func(*args, **kwargs)
 
         return inner

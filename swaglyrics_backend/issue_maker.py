@@ -263,10 +263,20 @@ def check_song_instrumental(track: JSONDict, headers: Dict[str, str]) -> bool:
 
     Returns true if it considers a song to be instrumental.
     """
+    song = track['name']
+    artist = track['artists'][0]['name']
     metadata = requests.get(f'https://api.spotify.com/v1/audio-features/{track["id"]}', headers=headers).json()
-    if metadata["instrumentalness"] > 0.45 and metadata["speechiness"] < 0.04:
-        return True
-    return False
+    instrumental = False
+    instrumentalness = metadata["instrumentalness"]
+    speechiness = metadata["speechiness"]
+    if instrumentalness > 0.45 and speechiness < 0.04:
+        instrumental = True
+
+    logging.info(f"{song} by {artist} is{' NOT' * (not instrumental)} instrumental."  # add NOT if not instrumental
+                 f"instrumentalness: {instrumentalness}, speechiness: {speechiness}")
+    discord_instrumental(song, artist, instrumental, instrumentalness, speechiness)  # send to discord
+
+    return instrumental
 
 
 def check_stripper(song: str, artist: str) -> bool:
@@ -322,6 +332,74 @@ def discord_deploy(payload: JSONDict) -> None:
         logging.info("sent discord message")
     else:
         logging.error(f"discord message send failed: {r.status_code}")
+
+
+def discord_genius(song: str, artist: str, g_stripper: Optional[str]) -> None:
+    """
+    sends message to Discord server when stripper resolved using the backend.
+    """
+    # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
+    url = f"https://discord.com/api/webhooks/{os.environ['DISCORD_URL_GENIUS']}?wait=true"
+    title = f"Genius Stripper for {song} by {artist}."
+    if g_stripper:
+        desc = f"Found! {g_stripper}"
+        color = 3066993  # green
+        lyrics_url = f"https://genius.com/{g_stripper}-lyrics"
+    else:
+        desc = "Stripper not found. Sad!"
+        color = 15158332  # red
+        lyrics_url = ""
+
+    json = {
+        "embeds": [{
+            "title": title,
+            "description": desc,
+            "url": lyrics_url,
+            "timestamp": dt.now(),
+            "color": color
+        }]
+    }
+
+    r = requests.post(url, json=json)
+    if r.status_code == requests.codes.ok:
+        logging.info("sent discord genius message")
+    else:
+        logging.error(f"discord genius message send failed: {r.status_code}")
+
+
+def discord_instrumental(song: str, artist: str,
+                         instrumental: bool, instrumentalness: float, speechiness: float) -> None:
+    """
+    sends message to Discord server when instrumentalness checked using the backend.
+    """
+    # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
+    url = f"https://discord.com/api/webhooks/{os.environ['DISCORD_URL_INSTRUMENTAL']}?wait=true"
+    title = f"{song} by {artist}."
+
+    json = {
+        "embeds": [{
+            "title": title,
+            "description": f"{'Not '*(not instrumental)}Instrumental.",
+            "timestamp": dt.now(),
+            "color": 1501879,
+            "fields": [
+                {
+                    "name": "`Instrumentalness`",
+                    "value": str(instrumentalness)
+                },
+                {
+                    "name": "`Speechiness`",
+                    "value": str(speechiness)
+                }
+            ]
+        }]
+    }
+
+    r = requests.post(url, json=json)
+    if r.status_code == requests.codes.ok:
+        logging.info("sent discord instrumental message")
+    else:
+        logging.error(f"discord instrumental message send failed: {r.status_code}")
 
 
 # ------------------- routes begin here ------------------- #
@@ -381,6 +459,7 @@ def get_stripper():
     if lyrics:
         return lyrics.stripper
     g_stripper = genius_stripper(song, artist)
+    discord_genius(song, artist, g_stripper)  # log to discord
     if g_stripper:
         logging.info(f'using genius_stripper: {g_stripper}')
         return g_stripper
