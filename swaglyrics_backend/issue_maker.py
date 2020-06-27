@@ -359,7 +359,7 @@ def discord_genius_logger(song: str, artist: str, g_stripper: Optional[str]) -> 
             "title": title,
             "description": desc,
             "url": lyrics_url,
-            "timestamp": dt.now(),
+            "timestamp": str(dt.now()),
             "color": color
         }]
     }
@@ -384,7 +384,7 @@ def discord_instrumental_logger(song: str, artist: str,
         "embeds": [{
             "title": title,
             "description": f"{'Not ' if not instrumental else ''}Instrumental.",
-            "timestamp": dt.now(),
+            "timestamp": str(dt.now()),
             "color": 1501879,
             "fields": [
                 {
