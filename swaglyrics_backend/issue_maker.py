@@ -266,15 +266,17 @@ def check_song_instrumental(track: JSONDict, headers: Dict[str, str]) -> bool:
     song = track['name']
     artist = track['artists'][0]['name']
     metadata = requests.get(f'https://api.spotify.com/v1/audio-features/{track["id"]}', headers=headers).json()
+
     instrumental = False
-    instrumentalness = metadata["instrumentalness"]
-    speechiness = metadata["speechiness"]
-    if instrumentalness > 0.45 and speechiness < 0.04:
+    instr = metadata["instrumentalness"]
+    speechy = metadata["speechiness"]
+
+    if instr > 0.45 and speechy < 0.04:  # threshold empirically determined
         instrumental = True
 
-    logging.info(f"{song} by {artist} is{' NOT' * (not instrumental)} instrumental."  # add NOT if not instrumental
-                 f"instrumentalness: {instrumentalness}, speechiness: {speechiness}")
-    discord_instrumental(song, artist, instrumental, instrumentalness, speechiness)  # send to discord
+    logging.info(f"{song} by {artist} is{' NOT' if not instrumental else ''} instrumental. Instrumentalness: {instr}, "
+                 f"Speechiness: {speechy}")
+    discord_instrumental_logger(song, artist, instrumental, instr, speechy)  # send to discord
 
     return instrumental
 
@@ -300,11 +302,14 @@ def del_line(song: str, artist: str) -> int:
     return cnt
 
 
-def discord_deploy(payload: JSONDict) -> None:
+# ------------------- discord logging functions ------------------- #
+# https://discordapp.com/developers/docs/resources/webhook#execute-webhook
+
+
+def discord_deploy_logger(payload: JSONDict) -> None:
     """
     sends message to Discord server when deploy from github to backend successful.
     """
-    # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
     url = f"https://discord.com/api/webhooks/{os.environ['DISCORD_URL']}?wait=true"
     head_commit = payload["head_commit"]
     author = head_commit["author"]
@@ -334,11 +339,10 @@ def discord_deploy(payload: JSONDict) -> None:
         logging.error(f"discord message send failed: {r.status_code}")
 
 
-def discord_genius(song: str, artist: str, g_stripper: Optional[str]) -> None:
+def discord_genius_logger(song: str, artist: str, g_stripper: Optional[str]) -> None:
     """
     sends message to Discord server when stripper resolved using the backend.
     """
-    # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
     url = f"https://discord.com/api/webhooks/{os.environ['DISCORD_URL_GENIUS']}?wait=true"
     title = f"Genius Stripper for {song} by {artist}."
     if g_stripper:
@@ -367,8 +371,8 @@ def discord_genius(song: str, artist: str, g_stripper: Optional[str]) -> None:
         logging.error(f"discord genius message send failed: {r.status_code}")
 
 
-def discord_instrumental(song: str, artist: str,
-                         instrumental: bool, instrumentalness: float, speechiness: float) -> None:
+def discord_instrumental_logger(song: str, artist: str,
+                                instrumental: bool, instrumentalness: float, speechiness: float) -> None:
     """
     sends message to Discord server when instrumentalness checked using the backend.
     """
@@ -379,7 +383,7 @@ def discord_instrumental(song: str, artist: str,
     json = {
         "embeds": [{
             "title": title,
-            "description": f"{'Not '*(not instrumental)}Instrumental.",
+            "description": f"{'Not ' if not instrumental else ''}Instrumental.",
             "timestamp": dt.now(),
             "color": 1501879,
             "fields": [
@@ -459,7 +463,7 @@ def get_stripper():
     if lyrics:
         return lyrics.stripper
     g_stripper = genius_stripper(song, artist)
-    discord_genius(song, artist, g_stripper)  # log to discord
+    discord_genius_logger(song, artist, g_stripper)  # log to discord
     if g_stripper:
         logging.info(f'using genius_stripper: {g_stripper}')
         return g_stripper
@@ -585,7 +589,7 @@ def update_webhook():
         logging.info(f'{build_commit}')
         if commit_hash == payload["after"]:
             # since payload is from github and pull info is what we pulled from git
-            discord_deploy(payload)
+            discord_deploy_logger(payload)
         else:
             logging.error(f'weird mismatch: {commit_hash=} {payload["after"]=}')
         return f'Updated PythonAnywhere server to commit {commit_hash}'
