@@ -8,14 +8,17 @@ from requests import Response
 
 class TestBase(unittest.TestCase):
     def setUp(self):
-        patch.dict(os.environ, {'WEBHOOK_SECRET': '',
-                                'GH_TOKEN': '',
-                                'PASSWD': '',
-                                'DB_PWD': '',
-                                'C_ID': '',
-                                'SECRET': '',
-                                'USERNAME': '',
-                                'GENIUS': ''}).start()
+        patch.dict(os.environ, {
+            'WEBHOOK_SECRET': '',
+            'GH_TOKEN': '',
+            'PASSWD': '',
+            'DB_PWD': '',
+            'C_ID': '',
+            'SECRET': '',
+            'USERNAME': '',
+            'GENIUS': '',
+            'SWAG': '69aaa69'
+        }).start()
 
         if "/tests" not in os.getcwd():
             os.chdir("tests")
@@ -161,6 +164,12 @@ class TestIssueMaker(TestBase):
             response = delete_line()
             self.assertEqual(response, "Removed 1 instances of Supersonics by Caravan Palace from "
                                        "unsupported.txt successfully.")
+
+    def test_that_test_route_works(self):
+        from swaglyrics_backend.issue_maker import app
+        with app.test_client() as c:
+            resp = c.get('/test')
+        self.assertEqual(resp, '69aaa69')
 
     def test_update(self):
         from swaglyrics import __version__
