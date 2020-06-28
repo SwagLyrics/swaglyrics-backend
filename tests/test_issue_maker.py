@@ -169,7 +169,17 @@ class TestIssueMaker(TestBase):
         from swaglyrics_backend.issue_maker import app
         with app.test_client() as c:
             resp = c.get('/test')
-        self.assertEqual(resp.data, '69aaa69')
+        self.assertEqual(resp.data, b'69aaa69')
+
+    def test_landing_page(self):
+        from swaglyrics_backend.issue_maker import app
+        generate_fake_unsupported()
+        with app.test_client as c:
+            resp = c.get('/')
+
+        assert b'The SwagLyrics Backend and API is housed here.' in resp.data
+        assert b'Heroku' not in resp.data
+        assert b'Miracle by Caravan Palace' in resp.data
 
     def test_update(self):
         from swaglyrics import __version__
@@ -192,7 +202,7 @@ class TestIssueMaker(TestBase):
                 c.post('/unsupported', data={'version': str(__version__),
                                              'song': 'Miracle',
                                              'artist': 'Caravan Palace'})
-                """Test correct output given song and artist that exist in unsupported.txt"""
+                # Test correct output given song and artist that exist in unsupported.txt
                 self.assertEqual(update(),
                                  "Issue already exists on the GitHub repo. "
                                  "\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues")
