@@ -5,6 +5,9 @@ from unittest.mock import patch
 
 from requests import Response
 
+from swaglyrics_backend.issue_maker import genius_stripper, check_song, del_line, get_spotify_token, \
+    is_title_mismatched, check_stripper
+
 
 class TestBase(unittest.TestCase):
     def setUp(self):
@@ -42,8 +45,7 @@ class TestIssueMaker(TestBase):
         }
     }
 
-    def test_that_deletes_line(self):
-        from swaglyrics_backend.issue_maker import del_line
+    def test_that_del_line_deletes_line(self):
         song = "Supersonics"
         artist = "Caravan Palace"
         generate_fake_unsupported()
@@ -55,7 +57,6 @@ class TestIssueMaker(TestBase):
     @patch('requests.Response.json', return_value=sample_spotify_json)
     @patch('requests.post', return_value=Response())
     def test_update_token(self, requests_mock, json_mock):
-        from swaglyrics_backend.issue_maker import get_spotify_token
         from swaglyrics_backend import issue_maker
         get_spotify_token()
         self.assertTrue(issue_maker.spotify_token != '')
@@ -65,7 +66,6 @@ class TestIssueMaker(TestBase):
     @patch('requests.Response.json', return_value={'error': 'yes'})
     @patch('requests.get', return_value=Response())
     def test_check_song_returns_false_on_bad_response(self, requests_mock, response_mock, spotify_mock):
-        from swaglyrics_backend.issue_maker import check_song
         from swaglyrics_backend import issue_maker
         issue_maker.t_expiry = time.time() + 3600
         self.assertFalse(check_song("Miracle", "Caravan Palace"))
@@ -75,7 +75,6 @@ class TestIssueMaker(TestBase):
     @patch('requests.get', return_value=Response())
     @patch('swaglyrics_backend.issue_maker.check_song_instrumental', return_value=False)
     def test_that_check_song_returns_true(self, check_instrumental, mock_get, mock_response, spotify_token):
-        from swaglyrics_backend.issue_maker import check_song
         mock_response.return_value = get_correct_spotify_search_json(
             'correct_spotify_data.json')
 
@@ -85,13 +84,11 @@ class TestIssueMaker(TestBase):
     @patch('requests.Response.json', return_value=unknown_song_json)
     @patch('requests.get', return_value=Response())
     def test_that_check_song_returns_false_on_non_legit_song(self, mock_get, mock_response, spotify_token):
-        from swaglyrics_backend.issue_maker import check_song
         self.assertFalse(check_song("Miracle", "Caravan Palace"))
 
     @patch('requests.Response.json', return_value=None)
     @patch('requests.get', return_value=Response())
     def test_that_stripper_returns_none(self, mock_get, mock_response):
-        from swaglyrics_backend.issue_maker import genius_stripper
         self.assertIsNone(genius_stripper("Miracle", "Caravan Palace"))
 
     @patch('requests.Response.json')
@@ -102,22 +99,25 @@ class TestIssueMaker(TestBase):
         mock_get.return_value = response
         mock_response.return_value = get_correct_spotify_search_json(
             'sample_genius_data.json')
-        from swaglyrics_backend.issue_maker import genius_stripper
         self.assertEqual(genius_stripper(
             "Miracle", "Caravan Palace"), "Caravan-palace-miracle")
 
+    @patch('swaglyrics_backend.issue_maker.requests.get')
+    def test_that_check_stripper_checks_stripper(self, fake_get):
+        response = Response()
+        response.status_code = 200
+        fake_get.return_value = response
+        self.assertEqual(check_stripper("Hello", "Adele"), True)
+
     def test_that_title_mismatches(self):
-        from swaglyrics_backend.issue_maker import is_title_mismatched
         self.assertTrue(
             is_title_mismatched(["Bohemian", "Rhapsody", "by", "Queen"], "Miracle by Caravan Palace", 2))
 
     def test_that_title_not_mismatches(self):
-        from swaglyrics_backend.issue_maker import is_title_mismatched
         self.assertFalse(
             is_title_mismatched(["Bohemian", "Rhapsody", "by", "Queen"], "bohemian rhapsody by queen", 2))
 
     def test_that_title_not_mismatches_with_one_error(self):
-        from swaglyrics_backend.issue_maker import is_title_mismatched
         self.assertFalse(is_title_mismatched(["BoHemIaN", "RhaPsoDy", "2011", "bY", "queen"], "bohemian RHAPSODY "
                                                                                               "By QUEEN", 2))
 
