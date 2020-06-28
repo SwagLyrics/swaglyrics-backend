@@ -174,7 +174,7 @@ class TestIssueMaker(TestBase):
     def test_landing_page(self):
         from swaglyrics_backend.issue_maker import app
         generate_fake_unsupported()
-        with app.test_client as c:
+        with app.test_client() as c:
             resp = c.get('/')
 
         assert b'The SwagLyrics Backend and API is housed here.' in resp.data
