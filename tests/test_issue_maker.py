@@ -169,7 +169,7 @@ class TestIssueMaker(TestBase):
         from swaglyrics_backend.issue_maker import app
         with app.test_client() as c:
             resp = c.get('/test')
-        self.assertEqual(resp, '69aaa69')
+        self.assertEqual(resp.data, '69aaa69')
 
     def test_update(self):
         from swaglyrics import __version__
