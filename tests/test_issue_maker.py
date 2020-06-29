@@ -196,29 +196,23 @@ class TestIssueMaker(TestBase):
         assert resp.data == b'24'
         assert resp_again.status_code == 429
 
-    def test_update(self):
+    def test_update_unsupported(self):
         from swaglyrics import __version__
-        from flask import Flask
+        from swaglyrics_backend.issue_maker import app
 
-        app = Flask(__name__)
-        with app.test_request_context('/'):
-            with app.test_client() as c:
-                app.config['TESTING'] = True
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            generate_fake_unsupported()
+            # fix soon
+            # self.assertEqual(
+            #     update(), 'Please update SwagLyrics to the latest version to get better support :)')
 
-                c.post('/unsupported', data={'version': '0.9.0',
-                                             'song': 'Miracle',
-                                             'artist': 'Caravan Palace'})
-                generate_fake_unsupported()
-                # fix soon
-                # self.assertEqual(
-                #     update(), 'Please update SwagLyrics to the latest version to get better support :)')
-
-                resp = c.post('/unsupported', data={'version': str(__version__),
-                                                    'song': 'Miracle',
-                                                    'artist': 'Caravan Palace'})
-                # Test correct output given song and artist that exist in unsupported.txt
-                assert resp.data == b"Issue already exists on the GitHub repo. " \
-                                    b"\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
+            resp = c.post('/unsupported', data={'version': str(__version__),
+                                                'song': 'Miracle',
+                                                'artist': 'Caravan Palace'})
+            # Test correct output given song and artist that exist in unsupported.txt
+            assert resp.data == b"Issue already exists on the GitHub repo. " \
+                                b"\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
 
 
 def get_correct_spotify_search_json(filename):
