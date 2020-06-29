@@ -124,8 +124,7 @@ class TestIssueMaker(TestBase):
 
     def test_that_title_not_mismatches_with_one_error(self):
         from swaglyrics_backend.issue_maker import is_title_mismatched
-        assert not is_title_mismatched(["BoHemIaN", "RhaPsoDy", "2011", "bY", "queen"], "bohemian RHAPSODY "
-                                                                                              "By QUEEN", 2)
+        assert not is_title_mismatched(["BoHemIaN", "RhaPsoDy", "2011", "bY", "queen"], "bohemian RHAPSODY By QUEEN", 2)
 
     # @patch('swaglyrics_backend.issue_maker.requests.post')
     # def test_discord_genius_logger_works_when_stripper_found(self, fake_post):
@@ -199,7 +198,6 @@ class TestIssueMaker(TestBase):
 
     def test_update(self):
         from swaglyrics import __version__
-        from swaglyrics_backend.issue_maker import update
         from flask import Flask
 
         app = Flask(__name__)
