@@ -1,7 +1,9 @@
 import json
+import os
 
 
 def get_spotify_json(filename):
+    filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
     with open(filename, 'r') as f:
         raw_json = f.read()
         return json.loads(raw_json)
