@@ -17,6 +17,7 @@ class TestBase(unittest.TestCase):
             'SECRET': '',
             'USERNAME': '',
             'GENIUS': '',
+            'DISCORD_URL_GENIUS': '',
             'SWAG': '69aaa69'
         }).start()
 
@@ -53,7 +54,7 @@ class TestIssueMaker(TestBase):
         del_line(song, artist)
         with open('unsupported.txt', 'r') as f:
             lines = f.readlines()
-            self.assertFalse(song + " by " + artist in lines)
+            assert not (song + " by " + artist in lines)
 
     @patch('requests.Response.json', return_value=sample_spotify_json)
     @patch('requests.post', return_value=Response())
@@ -61,8 +62,8 @@ class TestIssueMaker(TestBase):
         from swaglyrics_backend.issue_maker import get_spotify_token
         from swaglyrics_backend import issue_maker
         get_spotify_token()
-        self.assertTrue(issue_maker.spotify_token != '')
-        self.assertTrue(issue_maker.spotify_token_expiry != 0)
+        assert issue_maker.spotify_token != ''
+        assert issue_maker.spotify_token_expiry != 0
 
     @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
     @patch('requests.Response.json', return_value={'error': 'yes'})
@@ -71,7 +72,7 @@ class TestIssueMaker(TestBase):
         from swaglyrics_backend.issue_maker import check_song
         from swaglyrics_backend import issue_maker
         issue_maker.t_expiry = time.time() + 3600
-        self.assertFalse(check_song("Miracle", "Caravan Palace"))
+        assert not check_song("Miracle", "Caravan Palace")
 
     @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
     @patch('requests.Response.json', return_value={'error', 'yes'})
@@ -80,21 +81,20 @@ class TestIssueMaker(TestBase):
     def test_that_check_song_returns_true(self, check_instrumental, mock_get, mock_response, spotify_token):
         from swaglyrics_backend.issue_maker import check_song
         mock_response.return_value = get_correct_spotify_search_json('correct_spotify_data.json')
-
-        self.assertTrue(check_song("Miracle", "Caravan Palace"))
+        assert check_song("Miracle", "Caravan Palace")
 
     @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
     @patch('requests.Response.json', return_value=unknown_song_json)
     @patch('requests.get', return_value=Response())
     def test_that_check_song_returns_false_on_non_legit_song(self, mock_get, mock_response, spotify_token):
         from swaglyrics_backend.issue_maker import check_song
-        self.assertFalse(check_song("Miracle", "Caravan Palace"))
+        assert not check_song("Miracle", "Caravan Palace")
 
     @patch('requests.Response.json', return_value=None)
     @patch('requests.get', return_value=Response())
     def test_that_stripper_returns_none(self, mock_get, mock_response):
         from swaglyrics_backend.issue_maker import genius_stripper
-        self.assertIsNone(genius_stripper("Miracle", "Caravan Palace"))
+        assert genius_stripper("Miracle", "Caravan Palace") is None
 
     @patch('requests.Response.json')
     @patch('requests.get')
@@ -104,7 +104,7 @@ class TestIssueMaker(TestBase):
         mock_get.return_value = response
         mock_response.return_value = get_correct_spotify_search_json('sample_genius_data.json')
         from swaglyrics_backend.issue_maker import genius_stripper
-        self.assertEqual(genius_stripper("Miracle", "Caravan Palace"), "Caravan-palace-miracle")
+        assert genius_stripper("Miracle", "Caravan Palace") == "Caravan-palace-miracle"
 
     @patch('swaglyrics_backend.issue_maker.requests.get')
     def test_that_check_stripper_checks_stripper(self, fake_get):
@@ -112,64 +112,70 @@ class TestIssueMaker(TestBase):
         response = Response()
         response.status_code = 200
         fake_get.return_value = response
-        self.assertEqual(check_stripper("Hello", "Adele"), True)
+        assert check_stripper("Hello", "Adele") is True
 
     def test_that_title_mismatches(self):
         from swaglyrics_backend.issue_maker import is_title_mismatched
-        self.assertTrue(
-            is_title_mismatched(["Bohemian", "Rhapsody", "by", "Queen"], "Miracle by Caravan Palace", 2))
+        assert is_title_mismatched(["Bohemian", "Rhapsody", "by", "Queen"], "Miracle by Caravan Palace", 2)
 
     def test_that_title_not_mismatches(self):
         from swaglyrics_backend.issue_maker import is_title_mismatched
-        self.assertFalse(
-            is_title_mismatched(["Bohemian", "Rhapsody", "by", "Queen"], "bohemian rhapsody by queen", 2))
+        assert not is_title_mismatched(["Bohemian", "Rhapsody", "by", "Queen"], "bohemian rhapsody by queen", 2)
 
     def test_that_title_not_mismatches_with_one_error(self):
         from swaglyrics_backend.issue_maker import is_title_mismatched
-        self.assertFalse(is_title_mismatched(["BoHemIaN", "RhaPsoDy", "2011", "bY", "queen"], "bohemian RHAPSODY "
-                                                                                              "By QUEEN", 2))
+        assert not is_title_mismatched(["BoHemIaN", "RhaPsoDy", "2011", "bY", "queen"], "bohemian RHAPSODY "
+                                                                                              "By QUEEN", 2)
+
+    # @patch('swaglyrics_backend.issue_maker.requests.post')
+    # def test_discord_genius_logger_works_when_stripper_found(self, fake_post):
+    #     response = Response()
+    #     response.status_code = 200
+    #     fake_post.return_value = response
+    #     from swaglyrics_backend.issue_maker import discord_genius_logger
+    #     discord_genius_logger('Hello', 'Adele', 'Adele-hello')
 
     @patch('swaglyrics_backend.issue_maker.db')
     def test_that_add_stripper_adds_stripper(self, app_mock):
         """
         This test doesn't test database behaviour! Only dealing with unsupported and parsing request
         """
-        from swaglyrics_backend.issue_maker import app, add_stripper
-        generate_fake_unsupported()
+        from swaglyrics_backend.issue_maker import app
         with app.test_client() as c:
-            c.post('/add_stripper', data={'auth': '',
-                                          'song': 'Miracle',
-                                          'artist': 'Caravan Palace',
-                                          'stripper': 'Caravan-palace-miracle'})
             generate_fake_unsupported()
-            result = add_stripper()
-            self.assertEqual(f"Added stripper for Miracle by Caravan Palace to server database successfully, "
-                             f"deleted 1 instances from "
-                             "unsupported.txt", result)
+            resp = c.post('/add_stripper', data={'auth': '', 'song': 'Miracle', 'artist': 'Caravan Palace',
+                                                 'stripper': 'Caravan-palace-miracle'})
+            assert b"Added stripper for Miracle by Caravan Palace to server database successfully, "\
+                   b"deleted 1 instances from unsupported.txt" == resp.data
 
     def test_that_master_unsupported_reads_data(self):
         from swaglyrics_backend.issue_maker import app
         with app.test_client() as c:
             generate_fake_unsupported()
             req = c.get('/master_unsupported')
-            self.assertIsNotNone(req.response)
+            assert req.response is not None
 
     def test_that_delete_line_deletes_line_from_master_unsupported(self):
-        from swaglyrics_backend.issue_maker import app, delete_line
+        from swaglyrics_backend.issue_maker import app
         with app.test_client() as c:
-            c.post('/delete_unsupported', data={'auth': '',
-                                                'song': 'Supersonics',
-                                                'artist': 'Caravan Palace'})
             generate_fake_unsupported()
-            response = delete_line()
-            self.assertEqual(response, "Removed 1 instances of Supersonics by Caravan Palace from "
-                                       "unsupported.txt successfully.")
+            response = c.post('/delete_unsupported', data={'auth': '', 'song': 'Supersonics',
+                                                           'artist': 'Caravan Palace'})
+            assert response.data == b"Removed 1 instances of Supersonics by Caravan "\
+                                    b"Palace from unsupported.txt successfully."
 
     def test_that_test_route_works(self):
         from swaglyrics_backend.issue_maker import app
         with app.test_client() as c:
             resp = c.get('/test')
-        self.assertEqual(resp.data, b'69aaa69')
+        assert resp.data == b'69aaa69'
+
+    def test_swaglyrics_version_route(self):
+        from swaglyrics_backend.issue_maker import app
+        from swaglyrics import __version__ as version
+        with app.test_client() as c:
+            resp = c.get('/version')
+        assert resp.data == version.encode()
 
     def test_landing_page(self):
         from swaglyrics_backend.issue_maker import app
@@ -180,6 +186,16 @@ class TestIssueMaker(TestBase):
         assert b'The SwagLyrics Backend and API is housed here.' in resp.data
         assert b'Heroku' not in resp.data
         assert b'Miracle by Caravan Palace' in resp.data
+
+    @patch('swaglyrics_backend.issue_maker.get_ipaddr', return_value='1.2.3.4')
+    def test_that_slow_is_rate_limited(self, fake_ip):
+        from swaglyrics_backend.issue_maker import app
+        with app.test_client() as c:
+            resp = c.get('/slow')
+            # the second one should be rate limited
+            resp_again = c.get('/slow')
+        assert resp.data == b'24'
+        assert resp_again.status_code == 429
 
     def test_update(self):
         from swaglyrics import __version__
@@ -199,13 +215,12 @@ class TestIssueMaker(TestBase):
                 # self.assertEqual(
                 #     update(), 'Please update SwagLyrics to the latest version to get better support :)')
 
-                c.post('/unsupported', data={'version': str(__version__),
-                                             'song': 'Miracle',
-                                             'artist': 'Caravan Palace'})
+                resp = c.post('/unsupported', data={'version': str(__version__),
+                                                    'song': 'Miracle',
+                                                    'artist': 'Caravan Palace'})
                 # Test correct output given song and artist that exist in unsupported.txt
-                self.assertEqual(update(),
-                                 "Issue already exists on the GitHub repo. "
-                                 "\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues")
+                assert resp.data == b"Issue already exists on the GitHub repo. " \
+                                    b"\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
 
 
 def get_correct_spotify_search_json(filename):
