@@ -5,6 +5,8 @@ from unittest.mock import patch
 
 from requests import Response
 
+from tests.base import get_spotify_json, generate_fake_unsupported
+
 
 class TestBase(unittest.TestCase):
     def setUp(self):
@@ -65,6 +67,25 @@ class TestIssueMaker(TestBase):
         assert issue_maker.spotify_token != ''
         assert issue_maker.spotify_token_expiry != 0
 
+    @patch('swaglyrics_backend.issue_maker.discord_instrumental_logger')
+    @patch('requests.Response.json', return_value=get_spotify_json('spotify_instrumental.json'))  # Für Elise
+    @patch('requests.get', return_value=Response())
+    def test_check_song_instrumental_returns_true(self, fake_post, fake_json, fake_discord):
+        from swaglyrics_backend.issue_maker import check_song_instrumental
+        # we reuse the Miracle by Caravan Palace json for other tests but the return value will be Für Elise
+        track = get_spotify_json('correct_spotify_data.json')['tracks']['items'][0]
+        instrumental = check_song_instrumental(track, {"Authorization": ""})
+        assert instrumental is True
+
+    @patch('swaglyrics_backend.issue_maker.discord_instrumental_logger')
+    @patch('requests.Response.json', return_value=get_spotify_json('spotify_not_instrumental.json'))  # Miracle
+    @patch('requests.get', return_value=Response())
+    def test_check_song_instrumental_returns_false(self, fake_post, fake_json, fake_discord):
+        from swaglyrics_backend.issue_maker import check_song_instrumental
+        track = get_spotify_json('correct_spotify_data.json')['tracks']['items'][0]  # Miracle by Caravan Palace
+        instrumental = check_song_instrumental(track, {"Authorization": ""})
+        assert instrumental is False
+
     @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
     @patch('requests.Response.json', return_value={'error': 'yes'})
     @patch('requests.get', return_value=Response())
@@ -80,7 +101,7 @@ class TestIssueMaker(TestBase):
     @patch('swaglyrics_backend.issue_maker.check_song_instrumental', return_value=False)
     def test_that_check_song_returns_true(self, check_instrumental, mock_get, mock_response, spotify_token):
         from swaglyrics_backend.issue_maker import check_song
-        mock_response.return_value = get_correct_spotify_search_json('correct_spotify_data.json')
+        mock_response.return_value = get_spotify_json('correct_spotify_data.json')
         assert check_song("Miracle", "Caravan Palace")
 
     @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
@@ -102,7 +123,7 @@ class TestIssueMaker(TestBase):
         response = Response()
         response.status_code = 200
         mock_get.return_value = response
-        mock_response.return_value = get_correct_spotify_search_json('sample_genius_data.json')
+        mock_response.return_value = get_spotify_json('sample_genius_data.json')
         from swaglyrics_backend.issue_maker import genius_stripper
         assert genius_stripper("Miracle", "Caravan Palace") == "Caravan-palace-miracle"
 
@@ -213,15 +234,3 @@ class TestIssueMaker(TestBase):
             # Test correct output given song and artist that exist in unsupported.txt
             assert resp.data == b"Issue already exists on the GitHub repo. " \
                                 b"\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
-
-
-def get_correct_spotify_search_json(filename):
-    import flask
-    with open(filename, 'r') as r:
-        raw_json = r.read()
-        return flask.json.loads(raw_json)
-
-
-def generate_fake_unsupported():
-    with open('unsupported.txt', 'w') as f:
-        f.write('Miracle by Caravan Palace\nSupersonics by Caravan Palace\n')
