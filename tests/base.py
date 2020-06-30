@@ -1,5 +1,7 @@
 import json
 import os
+import unittest
+from unittest.mock import patch
 
 
 def get_spotify_json(filename):
@@ -12,3 +14,22 @@ def get_spotify_json(filename):
 def generate_fake_unsupported():
     with open('unsupported.txt', 'w') as f:
         f.write('Miracle by Caravan Palace\nSupersonics by Caravan Palace\n')
+
+
+class TestBase(unittest.TestCase):
+    def setUp(self):
+        patch.dict(os.environ, {
+            'WEBHOOK_SECRET': '',
+            'GH_TOKEN': '',
+            'PASSWD': '',
+            'DB_PWD': '',
+            'C_ID': '',
+            'SECRET': '',
+            'USERNAME': '',
+            'GENIUS': '',
+            'DISCORD_URL_GENIUS': '',
+            'SWAG': '69aaa69'
+        }).start()
+
+        if "/tests" not in os.getcwd():
+            os.chdir("tests")

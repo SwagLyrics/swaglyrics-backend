@@ -8,25 +8,6 @@ from requests import Response
 from tests.base import get_spotify_json, generate_fake_unsupported
 
 
-class TestBase(unittest.TestCase):
-    def setUp(self):
-        patch.dict(os.environ, {
-            'WEBHOOK_SECRET': '',
-            'GH_TOKEN': '',
-            'PASSWD': '',
-            'DB_PWD': '',
-            'C_ID': '',
-            'SECRET': '',
-            'USERNAME': '',
-            'GENIUS': '',
-            'DISCORD_URL_GENIUS': '',
-            'SWAG': '69aaa69'
-        }).start()
-
-        if "/tests" not in os.getcwd():
-            os.chdir("tests")
-
-
 class TestIssueMaker(TestBase):
     sample_spotify_json = ({
         "access_token": "NgCXRKNgCXRKNgCXRKNgCXRKNgCXRKNgCXRKMzYjw",
@@ -122,7 +103,7 @@ class TestIssueMaker(TestBase):
     def test_that_stripper_returns_stripper(self, mock_get, mock_response):
         response = Response()
         response.status_code = 200
-        mock_get.return_value = response
+        mock_get.return_value.status_code = response
         mock_response.return_value = get_spotify_json('sample_genius_data.json')
         from swaglyrics_backend.issue_maker import genius_stripper
         assert genius_stripper("Miracle", "Caravan Palace") == "Caravan-palace-miracle"
@@ -130,9 +111,7 @@ class TestIssueMaker(TestBase):
     @patch('swaglyrics_backend.issue_maker.requests.get')
     def test_that_check_stripper_checks_stripper(self, fake_get):
         from swaglyrics_backend.issue_maker import check_stripper
-        response = Response()
-        response.status_code = 200
-        fake_get.return_value = response
+        fake_get.return_value.status_code = 200
         assert check_stripper("Hello", "Adele") is True
 
     def test_that_title_mismatches(self):
