@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from requests import Response
 
-from tests.base import get_spotify_json, generate_fake_unsupported
+from tests.base import TestBase, get_spotify_json, generate_fake_unsupported
 
 
 class TestIssueMaker(TestBase):
