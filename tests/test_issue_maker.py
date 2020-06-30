@@ -144,6 +144,27 @@ class TestIssueMaker(TestBase):
             discord_genius_logger('bruh', 'heck', None)
         assert "discord genius message send failed: 500" in logs.output[0]
 
+    @patch('swaglyrics_backend.issue_maker.requests.post')
+    def test_discord_instrumental_logger_works(self, fake_post):
+        # figure out a way to also test embed creation
+        response = Response()
+        response.status_code = 200
+        fake_post.return_value = response
+        from swaglyrics_backend.issue_maker import discord_instrumental_logger
+        with self.assertLogs() as logs:
+            discord_instrumental_logger('changes', 'XXXTENTACION', False, 0.69, 0.42)
+        assert "sent discord instrumental message" in logs.output[0]
+
+    @patch('swaglyrics_backend.issue_maker.requests.post')
+    def test_discord_instrumental_logger_handles_error(self, fake_post):
+        response = Response()
+        response.status_code = 529
+        fake_post.return_value = response
+        from swaglyrics_backend.issue_maker import discord_instrumental_logger
+        with self.assertLogs() as logs:
+            discord_instrumental_logger('Up There', 'Frontliner & Geck-o', True, 0.31, 0.12)
+        assert "discord instrumental message send failed: 529" in logs.output[0]
+
     @patch('swaglyrics_backend.issue_maker.db')
     def test_that_add_stripper_adds_stripper(self, app_mock):
         """

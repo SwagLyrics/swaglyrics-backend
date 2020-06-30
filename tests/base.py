@@ -28,6 +28,7 @@ class TestBase(unittest.TestCase):
             'USERNAME': '',
             'GENIUS': '',
             'DISCORD_URL_GENIUS': '',
+            'DISCORD_URL_INSTRUMENTAL': '',
             'SWAG': '69aaa69'
         }).start()
 
