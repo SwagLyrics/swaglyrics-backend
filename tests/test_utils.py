@@ -96,10 +96,11 @@ class TestUtils(TestBase):
     def test_log_decorator_truncates(self):
         from swaglyrics_backend.utils import log_args
 
-        @log_args(max_chars=5)
-        def another_fake_function_to_test_log_decorator(stuff="this will get truncated"):
+        @log_args(max_chars=10)
+        def another_fake_function_to_test_log_decorator(stuff):
             return stuff
 
-        resp = another_fake_function_to_test_log_decorator()
-        # use caplog here later
+        with self.assertLogs() as logs:
+            resp = another_fake_function_to_test_log_decorator("this will get truncated")
+        assert 'this will  ...' in logs.output[0]
         assert resp == "this will get truncated"

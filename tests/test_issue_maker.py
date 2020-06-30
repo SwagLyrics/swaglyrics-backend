@@ -1,6 +1,4 @@
-import os
 import time
-import unittest
 from unittest.mock import patch
 
 from requests import Response
@@ -125,13 +123,26 @@ class TestIssueMaker(TestBase):
         from swaglyrics_backend.issue_maker import is_title_mismatched
         assert not is_title_mismatched(["BoHemIaN", "RhaPsoDy", "2011", "bY", "queen"], "bohemian RHAPSODY By QUEEN", 2)
 
-    # @patch('swaglyrics_backend.issue_maker.requests.post')
-    # def test_discord_genius_logger_works_when_stripper_found(self, fake_post):
-    #     response = Response()
-    #     response.status_code = 200
-    #     fake_post.return_value = response
-    #     from swaglyrics_backend.issue_maker import discord_genius_logger
-    #     discord_genius_logger('Hello', 'Adele', 'Adele-hello')
+    @patch('swaglyrics_backend.issue_maker.requests.post')
+    def test_discord_genius_logger_works_when_stripper_found(self, fake_post):
+        # figure out a way to also test embed creation
+        response = Response()
+        response.status_code = 200
+        fake_post.return_value = response
+        from swaglyrics_backend.issue_maker import discord_genius_logger
+        with self.assertLogs() as logs:
+            discord_genius_logger('Hello', 'Adele', 'Adele-hello')
+        assert "sent discord genius message" in logs.output[0]
+
+    @patch('swaglyrics_backend.issue_maker.requests.post')
+    def test_discord_genius_logger_handles_error(self, fake_post):
+        response = Response()
+        response.status_code = 500
+        fake_post.return_value = response
+        from swaglyrics_backend.issue_maker import discord_genius_logger
+        with self.assertLogs() as logs:
+            discord_genius_logger('Hello', 'Adele', 'Adele-hello')
+        assert "discord genius message send failed: 500" in logs.output[0]
 
     @patch('swaglyrics_backend.issue_maker.db')
     def test_that_add_stripper_adds_stripper(self, app_mock):
