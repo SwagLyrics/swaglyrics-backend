@@ -98,14 +98,13 @@ class TestIssueMaker(TestBase):
         from swaglyrics_backend.issue_maker import genius_stripper
         assert genius_stripper("Miracle", "Caravan Palace") is None
 
-    @patch('requests.Response.json')
+    @patch('requests.Response.json', return_value=get_spotify_json('sample_genius_data.json'))
     @patch('requests.get')
-    def test_that_stripper_returns_stripper(self, mock_get, mock_response):
+    def test_that_stripper_returns_stripper(self, mock_get, fake_response):
+        from swaglyrics_backend.issue_maker import genius_stripper
         response = Response()
         response.status_code = 200
-        mock_get.return_value.status_code = response
-        mock_response.return_value = get_spotify_json('sample_genius_data.json')
-        from swaglyrics_backend.issue_maker import genius_stripper
+        mock_get.return_value = response
         assert genius_stripper("Miracle", "Caravan Palace") == "Caravan-palace-miracle"
 
     @patch('swaglyrics_backend.issue_maker.requests.get')
