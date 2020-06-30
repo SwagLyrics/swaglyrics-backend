@@ -39,12 +39,22 @@ class TestIssueMaker(TestBase):
 
     @patch('requests.Response.json', return_value=sample_spotify_json)
     @patch('requests.post', return_value=Response())
-    def test_update_token(self, requests_mock, json_mock):
+    def test_update_spotify_token(self, requests_mock, json_mock):
         from swaglyrics_backend.issue_maker import get_spotify_token
         from swaglyrics_backend import issue_maker
         get_spotify_token()
         assert issue_maker.spotify_token != ''
         assert issue_maker.spotify_token_expiry != 0
+
+    @patch('swaglyrics_backend.issue_maker.time.time', return_value=1133742069)
+    def test_not_update_token_if_not_expired(self, fake_time):
+        from swaglyrics_backend.issue_maker import get_spotify_token
+        from swaglyrics_backend import issue_maker
+        issue_maker.spotify_token = 'this is a real token'
+        issue_maker.spotify_token_expiry = 1133742069 + 500  # so it shouldn't update
+        token = get_spotify_token()
+        assert token == issue_maker.spotify_token
+        assert issue_maker.spotify_token_expiry == 1133742569  # check expiry not updated
 
     @patch('swaglyrics_backend.issue_maker.discord_instrumental_logger')
     @patch('requests.Response.json', return_value=get_spotify_json('spotify_instrumental.json'))  # Für Elise
