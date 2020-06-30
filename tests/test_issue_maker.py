@@ -141,7 +141,7 @@ class TestIssueMaker(TestBase):
         fake_post.return_value = response
         from swaglyrics_backend.issue_maker import discord_genius_logger
         with self.assertLogs() as logs:
-            discord_genius_logger('Hello', 'Adele', 'Adele-hello')
+            discord_genius_logger('bruh', 'heck', None)
         assert "discord genius message send failed: 500" in logs.output[0]
 
     @patch('swaglyrics_backend.issue_maker.db')

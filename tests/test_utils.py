@@ -97,10 +97,11 @@ class TestUtils(TestBase):
         from swaglyrics_backend.utils import log_args
 
         @log_args(max_chars=10)
-        def another_fake_function_to_test_log_decorator(stuff):
+        def another_fake_function_to_test_log_decorator(stuff, more_stuff):
             return stuff
 
         with self.assertLogs() as logs:
-            resp = another_fake_function_to_test_log_decorator("this will get truncated")
+            resp = another_fake_function_to_test_log_decorator("this will get truncated", "gangnam style")
         assert 'this will  ...' in logs.output[0]
+        assert 'gangnam st ...' in logs.output[0]
         assert resp == "this will get truncated"
