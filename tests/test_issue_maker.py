@@ -47,7 +47,7 @@ class TestIssueMaker(TestBase):
         assert issue_maker.spotify_token_expiry != 0
 
     @patch('swaglyrics_backend.issue_maker.time.time', return_value=1133742069)
-    def test_not_update_token_if_not_expired(self, fake_time):
+    def test_not_update_spotify_token_if_not_expired(self, fake_time):
         from swaglyrics_backend.issue_maker import get_spotify_token
         from swaglyrics_backend import issue_maker
         issue_maker.spotify_token = 'this is a real token'
@@ -55,6 +55,29 @@ class TestIssueMaker(TestBase):
         token = get_spotify_token()
         assert token == issue_maker.spotify_token
         assert issue_maker.spotify_token_expiry == 1133742569  # check expiry not updated
+
+    @patch('swaglyrics_backend.issue_maker.get_installation_access_token')
+    @patch('swaglyrics_backend.issue_maker.get_jwt')
+    def test_update_github_token(self, fake_jwt, fake_token):
+        fake_token.return_value.json.return_value = {
+            "token": "v1.1f699f1069f60xxx",
+            "expires_at": "2020-07-26T22:14:10Z"
+        }
+        from swaglyrics_backend.issue_maker import get_github_token
+        from swaglyrics_backend import issue_maker
+        token = get_github_token()
+        assert issue_maker.gh_token == token
+        assert issue_maker.gh_token_expiry != 0
+
+    @patch('swaglyrics_backend.issue_maker.time.time', return_value=1133742069)
+    def test_not_update_github_token_if_not_expired(self, fake_time):
+        from swaglyrics_backend.issue_maker import get_github_token
+        from swaglyrics_backend import issue_maker
+        issue_maker.gh_token = 'this is also a real token'
+        issue_maker.gh_token_expiry = 1133742069 + 500  # so it shouldn't update
+        token = get_github_token()
+        assert token == issue_maker.gh_token
+        assert issue_maker.gh_token_expiry == 1133742569  # check expiry not updated
 
     @patch('swaglyrics_backend.issue_maker.discord_instrumental_logger')
     @patch('requests.Response.json', return_value=get_spotify_json('spotify_instrumental.json'))  # Für Elise

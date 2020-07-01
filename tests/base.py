@@ -29,6 +29,9 @@ class TestBase(unittest.TestCase):
             'GENIUS': '',
             'DISCORD_URL_GENIUS': '',
             'DISCORD_URL_INSTRUMENTAL': '',
+            'PRIVATE_PEM': '',
+            'APP_ID': '',
+            'INST_ID': '',
             'SWAG': '69aaa69'
         }).start()
 
