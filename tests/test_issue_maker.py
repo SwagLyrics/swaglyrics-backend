@@ -156,6 +156,21 @@ class TestIssueMaker(TestBase):
         from swaglyrics_backend.issue_maker import is_title_mismatched
         assert not is_title_mismatched(["BoHemIaN", "RhaPsoDy", "2011", "bY", "queen"], "bohemian RHAPSODY By QUEEN", 2)
 
+    @patch('swaglyrics_backend.issue_maker.get_github_token', return_value='fake token')
+    @patch('swaglyrics_backend.issue_maker.requests.post')
+    def test_create_issue(self, fake_post, fake_token):
+        fake_post.return_value.json.return_value = {
+            "html_url": "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues/1337"
+        }
+        fake_post.return_value.status_code = 200
+        from swaglyrics_backend.issue_maker import create_issue
+        resp = create_issue('Hello', 'Adele', '1.2.0', 'Adele-Hello')
+
+        assert resp['status_code'] == 200
+        assert resp['link'] == "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues/1337"
+        assert fake_post.call_args.args[0] == 'https://api.github.com/repos/SwagLyrics/Swaglyrics-For-Spotify/issues'
+        assert fake_post.call_args.kwargs['headers']['Authorization'] == "token fake token"
+
     @patch('swaglyrics_backend.issue_maker.requests.post')
     def test_discord_genius_logger_works_when_stripper_found(self, fake_post):
         # figure out a way to also test embed creation
