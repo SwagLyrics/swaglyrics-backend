@@ -283,13 +283,28 @@ class TestIssueMaker(TestBase):
 
     @patch('swaglyrics_backend.issue_maker.requests.post')
     def test_discord_instrumental_logger_handles_error(self, fake_post):
-        response = Response()
-        response.status_code = 529
-        fake_post.return_value = response
+        fake_post.return_value.status_code = 529
         from swaglyrics_backend.issue_maker import discord_instrumental_logger
         with self.assertLogs() as logs:
             discord_instrumental_logger('Up There', 'Frontliner & Geck-o', True, 0.31, 0.12)
         assert "discord instrumental message send failed: 529" in logs.output[0]
+
+    # @patch('swaglyrics_backend.issue_maker.Lyrics')
+    # def test_that_get_stripper_gets_stripper(self, fake_db):
+    #     class FakeLyrics:
+    #         def __init__(self, song=None, artist=None, stripper=None):
+    #             self.song = song
+    #             self.artist = artist
+    #             self.stripper = stripper
+    #     from swaglyrics_backend.issue_maker import app
+    #     fake_db.query.filter.return_value.first.return_value = FakeLyrics(song='bad vibes forever',
+    #                                                                       artist='XXXTENTACION',
+    #                                                                       stripper="XXXTENTACION-bad-vibes-forever"
+    #                                                                       )
+    #     with app.test_client() as c:
+    #         resp = c.get('/stripper', data={'song': 'bad vibes forever', 'artist': 'XXXTENTACION'})
+    #
+    #     assert resp.data == b"XXXTENTACION-bad-vibes-forever"
 
     @patch('swaglyrics_backend.issue_maker.db')
     def test_that_add_stripper_adds_stripper(self, app_mock):
@@ -303,6 +318,27 @@ class TestIssueMaker(TestBase):
                                                  'stripper': 'Caravan-palace-miracle'})
             assert b"Added stripper for Miracle by Caravan Palace to server database successfully, " \
                    b"deleted 1 instances from unsupported.txt" == resp.data
+
+    def test_that_add_stripper_auth_works(self):
+        """
+        This test doesn't test database behaviour! Only dealing with unsupported and parsing request
+        """
+        from swaglyrics_backend.issue_maker import app
+        with app.test_client() as c:
+            resp = c.post('/add_stripper', data={'auth': 'wrong auth', 'song': 'oui', 'artist': 'Jeremih',
+                                                 'stripper': 'Jeremih-oui'})
+
+        assert resp.status_code == 403
+
+    def test_that_delete_unsupported_auth_works(self):
+        """
+        This test doesn't test database behaviour! Only dealing with unsupported and parsing request
+        """
+        from swaglyrics_backend.issue_maker import app
+        with app.test_client() as c:
+            resp = c.post('/delete_unsupported', data={'auth': 'wrong auth', 'song': 'oui', 'artist': 'Jeremih'})
+
+        assert resp.status_code == 403
 
     def test_that_master_unsupported_reads_data(self):
         from swaglyrics_backend.issue_maker import app
