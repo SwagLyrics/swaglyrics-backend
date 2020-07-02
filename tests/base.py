@@ -27,6 +27,7 @@ class TestBase(unittest.TestCase):
             'SECRET': '',
             'USERNAME': '',
             'GENIUS': '',
+            'DISCORD_URL': '',
             'DISCORD_URL_GENIUS': '',
             'DISCORD_URL_INSTRUMENTAL': '',
             'PRIVATE_PEM': '',

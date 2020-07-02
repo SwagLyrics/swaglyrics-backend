@@ -27,6 +27,65 @@ class TestIssueMaker(TestBase):
         }
     }
 
+    github_payload_json = {  # trimmed a bit
+        "ref": "refs/heads/master",
+        "before": "89463fa7125a614f13c313c6a231c5d2f932571d",
+        "after": "50ff2b454dbeca33fbb902564cc02a6b8c5098f5",
+        "compare": "https://github.com/SwagLyrics/swaglyrics-backend/compare/89463fa7125a...50ff2b454dbe",
+        "commits": [
+            {
+                "id": "50ff2b454dbeca33fbb902564cc02a6b8c5098f5",
+                "tree_id": "880a194dd74b841e657f5428c8c9d5c7971b2072",
+                "distinct": True,
+                "message": "fix test\n\nSigned-off-by: Aadi Bajpai <redacted>",
+                "timestamp": "2020-06-04T03:59:02+05:30",
+                "url": "https://github.com/SwagLyrics/swaglyrics-backend/commit/50ff2b454dbeca33fbb902564cc02a6b8c50"
+                       "98f5",
+                "author": {
+                    "name": "Aadi Bajpai",
+                    "email": "[redacted]",
+                    "username": "aadibajpai"
+                },
+                "added": [
+
+                ],
+                "removed": [
+
+                ],
+                "modified": [
+                    "tests/test_issue_maker.py"
+                ]
+            }
+        ],
+        "head_commit": {
+            "id": "50ff2b454dbeca33fbb902564cc02a6b8c5098f5",
+            "tree_id": "880a194dd74b841e657f5428c8c9d5c7971b2072",
+            "distinct": True,
+            "message": "fix test\n\nSigned-off-by: Aadi Bajpai <redacted>",
+            "timestamp": "2020-06-04T03:59:02+05:30",
+            "url": "https://github.com/SwagLyrics/swaglyrics-backend/commit/50ff2b454dbeca33fbb902564cc02a6b8c5098f5",
+            "author": {
+                "name": "Aadi Bajpai",
+                "email": "[redacted]",
+                "username": "aadibajpai"
+            },
+            "committer": {
+                "name": "Aadi Bajpai",
+                "email": "[redacted]",
+                "username": "aadibajpai"
+            },
+            "added": [
+
+            ],
+            "removed": [
+
+            ],
+            "modified": [
+                "tests/test_issue_maker.py"
+            ]
+        }
+    }
+
     def test_that_del_line_deletes_line(self):
         from swaglyrics_backend.issue_maker import del_line
         song = "Supersonics"
@@ -172,11 +231,32 @@ class TestIssueMaker(TestBase):
         assert fake_post.call_args.kwargs['headers']['Authorization'] == "token fake token"
 
     @patch('swaglyrics_backend.issue_maker.requests.post')
+    def test_discord_deploy_logger_works(self, fake_post):
+        # also tests embed creation
+        fake_post.return_value.status_code = 200
+        from swaglyrics_backend.issue_maker import discord_deploy_logger
+        with self.assertLogs() as logs:
+            discord_deploy_logger(self.github_payload_json)
+        embed = fake_post.call_args.kwargs['json']['embeds'][0]
+
+        assert "sent discord message" in logs.output[0]
+        assert embed['author']['name'] == "Aadi Bajpai"
+        assert embed['author']['url'] == "https://github.com/aadibajpai"
+        assert embed['title'] == "fix test"
+
+    @patch('swaglyrics_backend.issue_maker.requests.post')
+    def test_discord_deploy_logger_handles_error(self, fake_post):
+        # also tests embed creation
+        fake_post.return_value.status_code = 500
+        from swaglyrics_backend.issue_maker import discord_deploy_logger
+        with self.assertLogs() as logs:
+            discord_deploy_logger(self.github_payload_json)
+
+        assert "discord message send failed: 500" in logs.output[0]
+
+    @patch('swaglyrics_backend.issue_maker.requests.post')
     def test_discord_genius_logger_works_when_stripper_found(self, fake_post):
-        # figure out a way to also test embed creation
-        response = Response()
-        response.status_code = 200
-        fake_post.return_value = response
+        fake_post.return_value.status_code = 200
         from swaglyrics_backend.issue_maker import discord_genius_logger
         with self.assertLogs() as logs:
             discord_genius_logger('Hello', 'Adele', 'Adele-hello')
@@ -184,9 +264,7 @@ class TestIssueMaker(TestBase):
 
     @patch('swaglyrics_backend.issue_maker.requests.post')
     def test_discord_genius_logger_handles_error(self, fake_post):
-        response = Response()
-        response.status_code = 500
-        fake_post.return_value = response
+        fake_post.return_value.status_code = 500
         from swaglyrics_backend.issue_maker import discord_genius_logger
         with self.assertLogs() as logs:
             discord_genius_logger('bruh', 'heck', None)
@@ -223,7 +301,7 @@ class TestIssueMaker(TestBase):
             generate_fake_unsupported()
             resp = c.post('/add_stripper', data={'auth': '', 'song': 'Miracle', 'artist': 'Caravan Palace',
                                                  'stripper': 'Caravan-palace-miracle'})
-            assert b"Added stripper for Miracle by Caravan Palace to server database successfully, "\
+            assert b"Added stripper for Miracle by Caravan Palace to server database successfully, " \
                    b"deleted 1 instances from unsupported.txt" == resp.data
 
     def test_that_master_unsupported_reads_data(self):
@@ -239,7 +317,7 @@ class TestIssueMaker(TestBase):
             generate_fake_unsupported()
             response = c.post('/delete_unsupported', data={'auth': '', 'song': 'Supersonics',
                                                            'artist': 'Caravan Palace'})
-            assert response.data == b"Removed 1 instances of Supersonics by Caravan "\
+            assert response.data == b"Removed 1 instances of Supersonics by Caravan " \
                                     b"Palace from unsupported.txt successfully."
 
     def test_that_test_route_works(self):
