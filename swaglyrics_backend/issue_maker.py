@@ -271,7 +271,8 @@ def check_song_instrumental(track: JSONDict, headers: Dict[str, str]) -> bool:
     instr = metadata["instrumentalness"]
     speechy = metadata["speechiness"]
 
-    if instr > 0.45 and speechy < 0.04:  # threshold empirically determined
+    # https://developer.spotify.com/documentation/web-api/reference/tracks/get-audio-features/
+    if instr > 0.45 and speechy < 0.3:  # threshold empirically determined
         instrumental = True
 
     logging.info(f"{song} by {artist} is{' NOT' if not instrumental else ''} instrumental. Instrumentalness: {instr}, "
