@@ -123,7 +123,7 @@ def log_args(loglevel_name="INFO", max_chars=20):
 # ------------------- authentication functions ------------------- #
 
 
-def get_jwt(app_id: int, private_key):
+def get_jwt(app_id, private_key):
 
     payload = {
         "iat": int(time.time()),
@@ -136,7 +136,7 @@ def get_jwt(app_id: int, private_key):
     return bearer_token
 
 
-def get_installation_access_token(jwt: str, installation_id: int):
+def get_installation_access_token(jwt: str, installation_id):
     # doc: https: // developer.github.com/v3/apps/#create-a-new-installation-token
 
     access_token_url = f"https://api.github.com/app/installations/{installation_id}/access_tokens"

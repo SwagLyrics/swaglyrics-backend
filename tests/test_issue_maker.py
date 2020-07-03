@@ -176,6 +176,29 @@ class TestIssueMaker(TestBase):
         assert check_song("Miracle", "Caravan Palace")
 
     @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
+    @patch('requests.get')
+    @patch('swaglyrics_backend.issue_maker.check_song_instrumental', return_value=True)
+    def test_that_check_song_returns_false_when_instrumental(self, check_instrumental, mock_get, spotify_token):
+        from swaglyrics_backend.issue_maker import check_song
+        mock_get.return_value.json.return_value = get_spotify_json('correct_spotify_data.json')
+
+        with self.assertLogs() as logs:
+            resp = check_song("Miracle", "Caravan Palace")
+
+        assert not resp
+        assert "Miracle by Caravan Palace seems to be instrumental" in logs.output[2]
+
+    @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
+    @patch('requests.get')
+    def test_that_check_song_returns_false_when_mismatch(self, mock_get, spotify_token):
+        from swaglyrics_backend.issue_maker import check_song
+        wrong_json = get_spotify_json('correct_spotify_data.json')
+        wrong_json['tracks']['items'][0]['name'] = "Not Miracle"  # so it mismatches
+        mock_get.return_value.json.return_value = wrong_json
+
+        assert not check_song("Miracle", "Caravan Palace")
+
+    @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
     @patch('requests.Response.json', return_value=unknown_song_json)
     @patch('requests.get', return_value=Response())
     def test_that_check_song_returns_false_on_non_legit_song(self, mock_get, mock_response, spotify_token):
@@ -391,10 +414,10 @@ class TestIssueMaker(TestBase):
 
     def test_update_unsupported(self):
         from swaglyrics import __version__
-        from swaglyrics_backend.issue_maker import app
-
+        from swaglyrics_backend.issue_maker import app, limiter
         with app.test_client() as c:
             app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
             generate_fake_unsupported()
             # fix soon
             # self.assertEqual(
@@ -406,3 +429,31 @@ class TestIssueMaker(TestBase):
             # Test correct output given song and artist that exist in unsupported.txt
             assert resp.data == b"Issue already exists on the GitHub repo. " \
                                 b"\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
+
+    def test_unsupported_key_error(self):
+        from swaglyrics_backend.issue_maker import app, limiter
+
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            # fix soon
+            # self.assertEqual(
+            #     update(), 'Please update SwagLyrics to the latest version to get better support :)')
+
+            resp = c.post('/unsupported', data={'song': 'Miracle', 'artist': 'Caravan Palace'})
+
+            assert resp.data == b"Please update SwagLyrics to the latest version (v1.2.0), it contains a hotfix for " \
+                                b"Genius A/B testing :)"
+
+    def test_unsupported_old_version(self):
+        from swaglyrics_backend.issue_maker import app, limiter
+
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            resp = c.post('/unsupported', data={'version': '1.1.0',
+                                                'song': 'Miracle',
+                                                'artist': 'Caravan Palace'})
+
+            assert resp.data == b"Please update SwagLyrics to the latest version (v1.2.0), it contains a hotfix for " \
+                                b"Genius A/B testing :)"
