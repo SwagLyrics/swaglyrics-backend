@@ -183,7 +183,7 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
                         logging.info(f'stripper found: {stripper}')
                         return stripper
                     except AttributeError:
-                        logging.warning(f'Path did not end in lyrics: {path}')
+                        logging.warning(f"Path did not end in lyrics: {hit['result']['path']}")
 
             logging.info('stripper not found')
             return None

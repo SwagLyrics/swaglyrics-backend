@@ -207,18 +207,53 @@ class TestIssueMaker(TestBase):
 
     @patch('requests.Response.json', return_value=None)
     @patch('requests.get', return_value=Response())
-    def test_that_stripper_returns_none(self, mock_get, mock_response):
+    def test_that_genius_stripper_returns_none(self, mock_get, mock_response):
         from swaglyrics_backend.issue_maker import genius_stripper
+        assert genius_stripper("Miracle", "Caravan Palace") is None
+
+    @patch('requests.get')
+    def test_that_genius_stripper_returns_none_on_error(self, mock_get):
+        from swaglyrics_backend.issue_maker import genius_stripper
+        fake_json = get_spotify_json('sample_genius_data.json')
+        fake_json['meta']['status'] = 500
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = fake_json
         assert genius_stripper("Miracle", "Caravan Palace") is None
 
     @patch('requests.Response.json', return_value=get_spotify_json('sample_genius_data.json'))
     @patch('requests.get')
-    def test_that_stripper_returns_stripper(self, mock_get, fake_response):
+    def test_that_genius_stripper_returns_stripper(self, mock_get, fake_response):
         from swaglyrics_backend.issue_maker import genius_stripper
         response = Response()
         response.status_code = 200
         mock_get.return_value = response
         assert genius_stripper("Miracle", "Caravan Palace") == "Caravan-palace-miracle"
+
+    @patch('requests.get')
+    def test_that_genius_stripper_returns_none_when_stripper_not_found(self, mock_get):
+        from swaglyrics_backend.issue_maker import genius_stripper
+        fake_json = get_spotify_json('sample_genius_data.json')  # json is for Miracle by Caravan Palace
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = fake_json
+        assert genius_stripper("Fake Song Name lol", "Fake Artist") is None
+
+    @patch('requests.get')
+    def test_that_genius_stripper_checks_for_stripper_format(self, mock_get):
+        from swaglyrics_backend.issue_maker import genius_stripper
+        fake_json = get_spotify_json('sample_genius_data.json')
+        fake_json['response']['hits'][0]['result']['path'] = "/Caravan-palace-miracle-annotated"  # no lyrics at end
+        # adjust titles so none match
+        fake_json['response']['hits'][1]['result']["full_title"] = "fake title"
+        fake_json['response']['hits'][4]['result']["full_title"] = "fake title"
+        fake_json['response']['hits'][5]['result']["full_title"] = "fake title"
+
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = fake_json
+        with self.assertLogs() as logs:
+            stripper = genius_stripper("Miracle", "Caravan Palace")
+
+        assert stripper is None
+        assert "Path did not end in lyrics: /Caravan-palace-miracle-annotated" in logs.output[7]
 
     @patch('swaglyrics_backend.issue_maker.requests.get')
     def test_that_check_stripper_checks_stripper(self, fake_get):
