@@ -457,3 +457,79 @@ class TestIssueMaker(TestBase):
 
             assert resp.data == b"Please update SwagLyrics to the latest version (v1.2.0), it contains a hotfix for " \
                                 b"Genius A/B testing :)"
+
+    def test_unsupported_trivial_case_does_not_make_issue(self):
+        from swaglyrics_backend.issue_maker import app, limiter
+
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            resp = c.post('/unsupported', data={'version': '1.2.0',
+                                                'song': 'Navajo',
+                                                'artist': 'Masego'})
+
+            assert resp.data == b"Lyrics for Navajo by Masego may not exist on Genius.\n" \
+                                b"If you feel there's an error, open a ticket at " \
+                                b"https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
+
+    @patch('swaglyrics_backend.issue_maker.check_song', return_value=True)
+    @patch('swaglyrics_backend.issue_maker.check_stripper', return_value=False)
+    @patch('swaglyrics_backend.issue_maker.create_issue')
+    def test_unsupported_not_trivial_case_does_make_issue(self, fake_issue, fake_check, another_fake_check):
+        from swaglyrics_backend.issue_maker import app, limiter
+        fake_issue.return_value = {
+            "status_code": 201,
+            "link": "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues/2443"  # fake issue creation
+        }
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            generate_fake_unsupported()
+            resp = c.post('/unsupported', data={'version': '1.2.0',
+                                                'song': "Avatar's Love",  # once trivial algo is better this will fail
+                                                'artist': 'Rachel Clinton'})
+
+        with open('unsupported.txt') as f:
+            data = f.readlines()
+
+        assert "Avatar's Love by Rachel Clinton\n" in data
+        assert resp.data == b"Lyrics for that song may not exist on Genius. Created issue on the GitHub repo for " \
+                            b"Avatar's Love by Rachel Clinton to investigate further. " \
+                            b"\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues/2443"
+
+    @patch('swaglyrics_backend.issue_maker.check_song', return_value=True)
+    @patch('swaglyrics_backend.issue_maker.check_stripper', return_value=False)
+    @patch('swaglyrics_backend.issue_maker.create_issue')
+    def test_unsupported_issue_making_error(self, fake_issue, fake_check, another_fake_check):
+        from swaglyrics_backend.issue_maker import app, limiter
+        fake_issue.return_value = {
+            "status_code": 500,  # error
+            "link": ""
+        }
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            generate_fake_unsupported()
+            resp = c.post('/unsupported', data={'version': '1.2.0',
+                                                'song': "purple.laces",  # once trivial algo is better this will fail
+                                                'artist': 'lost spaces'})
+        with open('unsupported.txt') as f:
+            data = f.readlines()
+
+        assert "purple.laces by lost spaces\n" in data
+        assert resp.data == b"Logged purple.laces by lost spaces in the server."
+
+    @patch('swaglyrics_backend.issue_maker.check_song', return_value=False)  # cuz fishy
+    @patch('swaglyrics_backend.issue_maker.check_stripper', return_value=False)
+    def test_unsupported_fishy_requests_handling(self, fake_check, another_fake_check):
+        from swaglyrics_backend.issue_maker import app, limiter
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            resp = c.post('/unsupported', data={'version': '1.2.0',
+                                                'song': "evbiurevbiuprvb",  # fake issue spam
+                                                'artist': 'bla$bla%bla'})  # special characters to trip the trivial case
+
+        assert resp.data == b"That's a fishy request, that song doesn't seem to exist on Spotify. " \
+                            b"\nIf you feel there's an error, open a ticket at " \
+                            b"https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
