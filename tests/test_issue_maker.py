@@ -347,22 +347,23 @@ class TestIssueMaker(TestBase):
             discord_instrumental_logger('Up There', 'Frontliner & Geck-o', True, 0.31, 0.12)
         assert "discord instrumental message send failed: 529" in logs.output[0]
 
-    # @patch('swaglyrics_backend.issue_maker.Lyrics')
-    # def test_that_get_stripper_gets_stripper(self, fake_db):
-    #     class FakeLyrics:
-    #         def __init__(self, song=None, artist=None, stripper=None):
-    #             self.song = song
-    #             self.artist = artist
-    #             self.stripper = stripper
-    #     from swaglyrics_backend.issue_maker import app
-    #     fake_db.query.filter.return_value.first.return_value = FakeLyrics(song='bad vibes forever',
-    #                                                                       artist='XXXTENTACION',
-    #                                                                       stripper="XXXTENTACION-bad-vibes-forever"
-    #                                                                       )
-    #     with app.test_client() as c:
-    #         resp = c.get('/stripper', data={'song': 'bad vibes forever', 'artist': 'XXXTENTACION'})
-    #
-    #     assert resp.data == b"XXXTENTACION-bad-vibes-forever"
+    @patch('swaglyrics_backend.issue_maker.Lyrics')
+    def test_that_get_stripper_gets_stripper(self, fake_db):
+        class FakeLyrics:
+            def __init__(self, song=None, artist=None, stripper=None):
+                self.song = song
+                self.artist = artist
+                self.stripper = stripper
+        from swaglyrics_backend.issue_maker import app
+        fake_db.query.filter.return_value.filter.return_value.first.return_value = FakeLyrics(
+            song='bad vibes forever',
+            artist='XXXTENTACION',
+            stripper="XXXTENTACION-bad-vibes-forever"
+        )
+        with app.test_client() as c:
+            resp = c.get('/stripper', data={'song': 'bad vibes forever', 'artist': 'XXXTENTACION'})
+
+        assert resp.data == b"XXXTENTACION-bad-vibes-forever"
 
     @patch('swaglyrics_backend.issue_maker.db')
     def test_that_add_stripper_adds_stripper(self, app_mock):
