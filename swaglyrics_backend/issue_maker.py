@@ -69,7 +69,7 @@ SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{usernam
                                                                 databasename="strippers"
                                                             )
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
-app.config["SQLALCHEMY_POOL_RECYCLE"] = 280
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {'pool_recycle': 280}
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
@@ -183,7 +183,7 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
                         logging.info(f'stripper found: {stripper}')
                         return stripper
                     except AttributeError:
-                        logging.warning(f'Path did not end in lyrics: {path}')
+                        logging.warning(f"Path did not end in lyrics: {hit['result']['path']}")
 
             logging.info('stripper not found')
             return None
@@ -413,46 +413,45 @@ def discord_instrumental_logger(song: str, artist: str,
 @app.route('/unsupported', methods=['POST'])
 @limiter.limit("1/5seconds;20/day")
 def update():
-    if request.method == 'POST':
-        song = request.form['song']
-        artist = request.form['artist']
-        stripped = stripper(song, artist)
+    song = request.form['song']
+    artist = request.form['artist']
+    stripped = stripper(song, artist)
 
-        try:
-            version = request.form['version']
-        except KeyError:
-            return update_text
+    try:
+        version = request.form['version']
+    except KeyError:
+        return update_text
 
-        logging.info(f"{song=}, {artist=}, {stripped=}, {version=}")
-        if version < '1.2.0':
-            return update_text
+    logging.info(f"{song=}, {artist=}, {stripped=}, {version=}")
+    if version < '1.2.0':
+        return update_text
 
-        with open('unsupported.txt', 'r', encoding='utf-8') as f:
-            data = f.read()
-        if f'{song} by {artist}' in data:
-            return 'Issue already exists on the GitHub repo. \n' \
-                   'https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues'
+    with open('unsupported.txt', 'r', encoding='utf-8') as f:
+        data = f.read()
+    if f'{song} by {artist}' in data:
+        return 'Issue already exists on the GitHub repo. \n' \
+               'https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues'
 
-        # check if song, artist trivial (all letters and spaces)
-        if re.fullmatch(asrg, song) and re.fullmatch(asrg, artist):
-            return f'Lyrics for {song} by {artist} may not exist on Genius.\n' + gh_issue_text
+    # check if song, artist trivial (all letters and spaces)
+    if re.fullmatch(asrg, song) and re.fullmatch(asrg, artist):
+        return f'Lyrics for {song} by {artist} may not exist on Genius.\n' + gh_issue_text
 
-        # check if song exists on spotify and does not have lyrics on genius
-        if check_song(song, artist) and not check_stripper(song, artist):
-            with open('unsupported.txt', 'a', encoding='utf-8') as f:
-                f.write(f'{song} by {artist}\n')
+    # check if song exists on spotify and does not have lyrics on genius
+    if check_song(song, artist) and not check_stripper(song, artist):
+        with open('unsupported.txt', 'a', encoding='utf-8') as f:
+            f.write(f'{song} by {artist}\n')
 
-            issue = create_issue(song, artist, version, stripped)
+        issue = create_issue(song, artist, version, stripped)
 
-            if issue['status_code'] == 201:
-                logging.info(f'Created issue on the GitHub repo for {song} by {artist}.')
-                return 'Lyrics for that song may not exist on Genius. ' \
-                       f'Created issue on the GitHub repo for {song} by {artist} to investigate ' \
-                       f'further. \n{issue["link"]}'
-            else:
-                return f'Logged {song} by {artist} in the server.'
+        if issue['status_code'] == 201:
+            logging.info(f'Created issue on the GitHub repo for {song} by {artist}.')
+            return 'Lyrics for that song may not exist on Genius. ' \
+                   f'Created issue on the GitHub repo for {song} by {artist} to investigate ' \
+                   f'further. \n{issue["link"]}'
+        else:
+            return f'Logged {song} by {artist} in the server.'
 
-        return "That's a fishy request, that song doesn't seem to exist on Spotify. \n" + gh_issue_text
+    return "That's a fishy request, that song doesn't seem to exist on Spotify. \n" + gh_issue_text
 
 
 @app.route("/stripper", methods=["GET", "POST"])

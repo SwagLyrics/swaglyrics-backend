@@ -176,6 +176,29 @@ class TestIssueMaker(TestBase):
         assert check_song("Miracle", "Caravan Palace")
 
     @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
+    @patch('requests.get')
+    @patch('swaglyrics_backend.issue_maker.check_song_instrumental', return_value=True)
+    def test_that_check_song_returns_false_when_instrumental(self, check_instrumental, mock_get, spotify_token):
+        from swaglyrics_backend.issue_maker import check_song
+        mock_get.return_value.json.return_value = get_spotify_json('correct_spotify_data.json')
+
+        with self.assertLogs() as logs:
+            resp = check_song("Miracle", "Caravan Palace")
+
+        assert not resp
+        assert "Miracle by Caravan Palace seems to be instrumental" in logs.output[2]
+
+    @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
+    @patch('requests.get')
+    def test_that_check_song_returns_false_when_mismatch(self, mock_get, spotify_token):
+        from swaglyrics_backend.issue_maker import check_song
+        wrong_json = get_spotify_json('correct_spotify_data.json')
+        wrong_json['tracks']['items'][0]['name'] = "Not Miracle"  # so it mismatches
+        mock_get.return_value.json.return_value = wrong_json
+
+        assert not check_song("Miracle", "Caravan Palace")
+
+    @patch('swaglyrics_backend.issue_maker.get_spotify_token', return_value={"access_token": ""})
     @patch('requests.Response.json', return_value=unknown_song_json)
     @patch('requests.get', return_value=Response())
     def test_that_check_song_returns_false_on_non_legit_song(self, mock_get, mock_response, spotify_token):
@@ -184,18 +207,53 @@ class TestIssueMaker(TestBase):
 
     @patch('requests.Response.json', return_value=None)
     @patch('requests.get', return_value=Response())
-    def test_that_stripper_returns_none(self, mock_get, mock_response):
+    def test_that_genius_stripper_returns_none(self, mock_get, mock_response):
         from swaglyrics_backend.issue_maker import genius_stripper
+        assert genius_stripper("Miracle", "Caravan Palace") is None
+
+    @patch('requests.get')
+    def test_that_genius_stripper_returns_none_on_error(self, mock_get):
+        from swaglyrics_backend.issue_maker import genius_stripper
+        fake_json = get_spotify_json('sample_genius_data.json')
+        fake_json['meta']['status'] = 500
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = fake_json
         assert genius_stripper("Miracle", "Caravan Palace") is None
 
     @patch('requests.Response.json', return_value=get_spotify_json('sample_genius_data.json'))
     @patch('requests.get')
-    def test_that_stripper_returns_stripper(self, mock_get, fake_response):
+    def test_that_genius_stripper_returns_stripper(self, mock_get, fake_response):
         from swaglyrics_backend.issue_maker import genius_stripper
         response = Response()
         response.status_code = 200
         mock_get.return_value = response
         assert genius_stripper("Miracle", "Caravan Palace") == "Caravan-palace-miracle"
+
+    @patch('requests.get')
+    def test_that_genius_stripper_returns_none_when_stripper_not_found(self, mock_get):
+        from swaglyrics_backend.issue_maker import genius_stripper
+        fake_json = get_spotify_json('sample_genius_data.json')  # json is for Miracle by Caravan Palace
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = fake_json
+        assert genius_stripper("Fake Song Name lol", "Fake Artist") is None
+
+    @patch('requests.get')
+    def test_that_genius_stripper_checks_for_stripper_format(self, mock_get):
+        from swaglyrics_backend.issue_maker import genius_stripper
+        fake_json = get_spotify_json('sample_genius_data.json')
+        fake_json['response']['hits'][0]['result']['path'] = "/Caravan-palace-miracle-annotated"  # no lyrics at end
+        # adjust titles so none match
+        fake_json['response']['hits'][1]['result']["full_title"] = "fake title"
+        fake_json['response']['hits'][4]['result']["full_title"] = "fake title"
+        fake_json['response']['hits'][5]['result']["full_title"] = "fake title"
+
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = fake_json
+        with self.assertLogs() as logs:
+            stripper = genius_stripper("Miracle", "Caravan Palace")
+
+        assert stripper is None
+        assert "Path did not end in lyrics: /Caravan-palace-miracle-annotated" in logs.output[7]
 
     @patch('swaglyrics_backend.issue_maker.requests.get')
     def test_that_check_stripper_checks_stripper(self, fake_get):
@@ -289,22 +347,23 @@ class TestIssueMaker(TestBase):
             discord_instrumental_logger('Up There', 'Frontliner & Geck-o', True, 0.31, 0.12)
         assert "discord instrumental message send failed: 529" in logs.output[0]
 
-    # @patch('swaglyrics_backend.issue_maker.Lyrics')
-    # def test_that_get_stripper_gets_stripper(self, fake_db):
-    #     class FakeLyrics:
-    #         def __init__(self, song=None, artist=None, stripper=None):
-    #             self.song = song
-    #             self.artist = artist
-    #             self.stripper = stripper
-    #     from swaglyrics_backend.issue_maker import app
-    #     fake_db.query.filter.return_value.first.return_value = FakeLyrics(song='bad vibes forever',
-    #                                                                       artist='XXXTENTACION',
-    #                                                                       stripper="XXXTENTACION-bad-vibes-forever"
-    #                                                                       )
-    #     with app.test_client() as c:
-    #         resp = c.get('/stripper', data={'song': 'bad vibes forever', 'artist': 'XXXTENTACION'})
-    #
-    #     assert resp.data == b"XXXTENTACION-bad-vibes-forever"
+    @patch('swaglyrics_backend.issue_maker.Lyrics')
+    def test_that_get_stripper_gets_stripper(self, fake_db):
+        class FakeLyrics:
+            def __init__(self, song=None, artist=None, stripper=None):
+                self.song = song
+                self.artist = artist
+                self.stripper = stripper
+        from swaglyrics_backend.issue_maker import app
+        fake_db.query.filter.return_value.filter.return_value.first.return_value = FakeLyrics(
+            song='bad vibes forever',
+            artist='XXXTENTACION',
+            stripper="XXXTENTACION-bad-vibes-forever"
+        )
+        with app.test_client() as c:
+            resp = c.get('/stripper', data={'song': 'bad vibes forever', 'artist': 'XXXTENTACION'})
+
+        assert resp.data == b"XXXTENTACION-bad-vibes-forever"
 
     @patch('swaglyrics_backend.issue_maker.db')
     def test_that_add_stripper_adds_stripper(self, app_mock):
@@ -391,10 +450,10 @@ class TestIssueMaker(TestBase):
 
     def test_update_unsupported(self):
         from swaglyrics import __version__
-        from swaglyrics_backend.issue_maker import app
-
+        from swaglyrics_backend.issue_maker import app, limiter
         with app.test_client() as c:
             app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
             generate_fake_unsupported()
             # fix soon
             # self.assertEqual(
@@ -406,3 +465,107 @@ class TestIssueMaker(TestBase):
             # Test correct output given song and artist that exist in unsupported.txt
             assert resp.data == b"Issue already exists on the GitHub repo. " \
                                 b"\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
+
+    def test_unsupported_key_error(self):
+        from swaglyrics_backend.issue_maker import app, limiter
+
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            # fix soon
+            # self.assertEqual(
+            #     update(), 'Please update SwagLyrics to the latest version to get better support :)')
+
+            resp = c.post('/unsupported', data={'song': 'Miracle', 'artist': 'Caravan Palace'})
+
+            assert resp.data == b"Please update SwagLyrics to the latest version (v1.2.0), it contains a hotfix for " \
+                                b"Genius A/B testing :)"
+
+    def test_unsupported_old_version(self):
+        from swaglyrics_backend.issue_maker import app, limiter
+
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            resp = c.post('/unsupported', data={'version': '1.1.0',
+                                                'song': 'Miracle',
+                                                'artist': 'Caravan Palace'})
+
+            assert resp.data == b"Please update SwagLyrics to the latest version (v1.2.0), it contains a hotfix for " \
+                                b"Genius A/B testing :)"
+
+    def test_unsupported_trivial_case_does_not_make_issue(self):
+        from swaglyrics_backend.issue_maker import app, limiter
+
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            resp = c.post('/unsupported', data={'version': '1.2.0',
+                                                'song': 'Navajo',
+                                                'artist': 'Masego'})
+
+            assert resp.data == b"Lyrics for Navajo by Masego may not exist on Genius.\n" \
+                                b"If you feel there's an error, open a ticket at " \
+                                b"https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
+
+    @patch('swaglyrics_backend.issue_maker.check_song', return_value=True)
+    @patch('swaglyrics_backend.issue_maker.check_stripper', return_value=False)
+    @patch('swaglyrics_backend.issue_maker.create_issue')
+    def test_unsupported_not_trivial_case_does_make_issue(self, fake_issue, fake_check, another_fake_check):
+        from swaglyrics_backend.issue_maker import app, limiter
+        fake_issue.return_value = {
+            "status_code": 201,
+            "link": "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues/2443"  # fake issue creation
+        }
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            generate_fake_unsupported()
+            resp = c.post('/unsupported', data={'version': '1.2.0',
+                                                'song': "Avatar's Love",  # once trivial algo is better this will fail
+                                                'artist': 'Rachel Clinton'})
+
+        with open('unsupported.txt') as f:
+            data = f.readlines()
+
+        assert "Avatar's Love by Rachel Clinton\n" in data
+        assert resp.data == b"Lyrics for that song may not exist on Genius. Created issue on the GitHub repo for " \
+                            b"Avatar's Love by Rachel Clinton to investigate further. " \
+                            b"\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues/2443"
+
+    @patch('swaglyrics_backend.issue_maker.check_song', return_value=True)
+    @patch('swaglyrics_backend.issue_maker.check_stripper', return_value=False)
+    @patch('swaglyrics_backend.issue_maker.create_issue')
+    def test_unsupported_issue_making_error(self, fake_issue, fake_check, another_fake_check):
+        from swaglyrics_backend.issue_maker import app, limiter
+        fake_issue.return_value = {
+            "status_code": 500,  # error
+            "link": ""
+        }
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            generate_fake_unsupported()
+            resp = c.post('/unsupported', data={'version': '1.2.0',
+                                                'song': "purple.laces",  # once trivial algo is better this will fail
+                                                'artist': 'lost spaces'})
+        with open('unsupported.txt') as f:
+            data = f.readlines()
+
+        assert "purple.laces by lost spaces\n" in data
+        assert resp.data == b"Logged purple.laces by lost spaces in the server."
+
+    @patch('swaglyrics_backend.issue_maker.check_song', return_value=False)  # cuz fishy
+    @patch('swaglyrics_backend.issue_maker.check_stripper', return_value=False)
+    def test_unsupported_fishy_requests_handling(self, fake_check, another_fake_check):
+        from swaglyrics_backend.issue_maker import app, limiter
+        with app.test_client() as c:
+            app.config['TESTING'] = True
+            limiter.enabled = False  # disable rate limiting
+            resp = c.post('/unsupported', data={'version': '1.2.0',
+                                                'song': "evbiurevbiuprvb",  # fake issue spam
+                                                'artist': 'bla$bla%bla'})  # special characters to trip the trivial case
+
+        assert resp.data == b"That's a fishy request, that song doesn't seem to exist on Spotify. " \
+                            b"\nIf you feel there's an error, open a ticket at " \
+                            b"https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
