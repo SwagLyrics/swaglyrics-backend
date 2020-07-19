@@ -40,11 +40,11 @@ passwd = os.environ['PASSWD']
 
 # github variables
 gh_token = ''
-gh_token_expiry = 0
+gh_token_expiry = 0.0
 
 # declare the Spotify token and expiry time
 spotify_token = ''
-spotify_token_expiry = 0
+spotify_token_expiry = 0.0
 
 gh_issue_text = "If you feel there's an error, open a ticket at " \
                 "https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"
@@ -81,7 +81,7 @@ db = SQLAlchemy(app)
 """
 
 
-class Lyrics(db.Model):
+class Lyrics(db.Model):  # type: ignore # https://stackoverflow.com/q/56774322/9044659
     __tablename__ = "all_strippers"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -177,16 +177,14 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
 
                 if not is_title_mismatched(words, full_title, max_err):
                     # return stripper as no mismatch
-                    path = gstr.search(hit['result']['path'])
-                    try:
+                    if path := gstr.search(hit['result']['path']):
                         stripper = path.group()
                         logging.info(f'stripper found: {stripper}')
                         return stripper
-                    except AttributeError:
+                    else:
                         logging.warning(f"Path did not end in lyrics: {hit['result']['path']}")
-
             logging.info('stripper not found')
-            return None
+    return None
 
 
 @log_args(max_chars=-1)

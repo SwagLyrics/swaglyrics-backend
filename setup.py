@@ -20,7 +20,8 @@ setuptools.setup(
         'dev': [
             'pytest',
             'pytest-cov',
-            'codecov'
+            'codecov',
+            'mypy'
         ]
     },
 )
