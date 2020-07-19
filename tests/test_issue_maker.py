@@ -348,7 +348,7 @@ class TestIssueMaker(TestBase):
         assert "discord instrumental message send failed: 529" in logs.output[0]
 
     @patch('swaglyrics_backend.issue_maker.Lyrics')
-    def test_that_get_stripper_gets_stripper(self, fake_db):
+    def test_that_get_stripper_gets_stripper_from_database(self, fake_db):
         class FakeLyrics:
             def __init__(self, song=None, artist=None, stripper=None):
                 self.song = song
@@ -364,6 +364,33 @@ class TestIssueMaker(TestBase):
             resp = c.get('/stripper', data={'song': 'bad vibes forever', 'artist': 'XXXTENTACION'})
 
         assert resp.data == b"XXXTENTACION-bad-vibes-forever"
+
+    @patch('swaglyrics_backend.issue_maker.discord_genius_logger')
+    @patch('swaglyrics_backend.issue_maker.genius_stripper')
+    @patch('swaglyrics_backend.issue_maker.Lyrics')
+    def test_that_get_stripper_gets_genius_stripper(self, fake_db, fake_stripper, fake_logger):
+        from swaglyrics_backend.issue_maker import app, limiter
+        fake_db.query.filter.return_value.filter.return_value.first.return_value = None
+        fake_stripper.return_value = "XXXTENTACION-bad-vibes-forever"
+        with app.test_client() as c:
+            limiter.enabled = False  # disable rate limiting
+            resp = c.get('/stripper', data={'song': 'bad vibes forever', 'artist': 'XXXTENTACION'})
+
+        assert resp.data == b"XXXTENTACION-bad-vibes-forever"
+
+    @patch('swaglyrics_backend.issue_maker.discord_genius_logger')
+    @patch('swaglyrics_backend.issue_maker.genius_stripper')
+    @patch('swaglyrics_backend.issue_maker.Lyrics')
+    def test_that_get_stripper_returns_not_found_when_no_stripper_found(self, fake_db, fake_stripper, fake_logger):
+        from swaglyrics_backend.issue_maker import app, limiter
+        fake_db.query.filter.return_value.filter.return_value.first.return_value = None
+        fake_stripper.return_value = None
+        with app.test_client() as c:
+            limiter.enabled = False  # disable rate limiting
+            resp = c.get('/stripper', data={'song': 'bad vibes forever', 'artist': 'XXXTENTACION'})
+
+        assert resp.data == b""
+        assert resp.status_code == 404
 
     @patch('swaglyrics_backend.issue_maker.db')
     def test_that_add_stripper_adds_stripper(self, app_mock):
@@ -440,8 +467,9 @@ class TestIssueMaker(TestBase):
 
     @patch('swaglyrics_backend.issue_maker.get_ipaddr', return_value='1.2.3.4')
     def test_that_slow_is_rate_limited(self, fake_ip):
-        from swaglyrics_backend.issue_maker import app
+        from swaglyrics_backend.issue_maker import app, limiter
         with app.test_client() as c:
+            limiter.enabled = True  # enable rate limiting
             resp = c.get('/slow')
             # the second one should be rate limited
             resp_again = c.get('/slow')
