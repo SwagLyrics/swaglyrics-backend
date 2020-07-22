@@ -189,7 +189,7 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
 
 @log_args(max_chars=-1)
 def is_title_mismatched(words: List[str], full_title: str, max_err: int) -> bool:
-    mismatch = [word for word in words if word.lower() not in full_title.lower()]
+    mismatch = [word for word in words if word.lower() not in full_title.lower().split()]
     logging.debug(f"broke on {mismatch}")
     return len(mismatch) > max_err
 
