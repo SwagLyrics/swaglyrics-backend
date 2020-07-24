@@ -60,7 +60,7 @@ aug = re.compile(r'(\([^)]*\)|- .*)')  # remove braces and included text and tex
 wdt = re.compile(r'(.+) by (.+) unsupported.')
 
 # artist and song regex
-asrg = re.compile(r'[A-Za-z\s]+')
+asrg = re.compile(r"[A-Za-z\s.,;']+")
 
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{username}.mysql.pythonanywhere-services." \
                           "com/{username}${databasename}".format(
