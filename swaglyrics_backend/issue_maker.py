@@ -158,10 +158,7 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
     title = re.sub(alg, '', title)
     logging.info(f'stripped title: {title}')
 
-    words = title.split()
-    max_err = len(words) // 2
-
-    # allow half length mismatch
+    max_err = len(title.split()) // 2  # allow half length mismatch
     logging.info(f'max_err is set to {max_err}')
 
     if r.status_code == 200:
@@ -169,13 +166,15 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
         if data['meta']['status'] == 200:
             hits = data['response']['hits']
             for hit in hits:
-                full_title = hit['result']['full_title']
-                logging.info(f'    full title: {full_title}')
+                g_title = hit['result']['full_title']
+                g_song = hit['result']['title']
+                g_artist = hit['result']['primary_artist']['name']
+                logging.info(f'    full title: {g_title}')
                 # remove punctuation before comparison
-                full_title = re.sub(alg, '', full_title)
-                logging.info(f'    stripped full title: {full_title}')
+                g_title = re.sub(alg, '', g_title)
+                logging.info(f'    stripped full title: {g_title}')
 
-                if not is_title_mismatched(words, full_title, max_err):
+                if not is_title_mismatched(title, song, artist, g_song, g_artist, max_err):
                     # return stripper as no mismatch
                     if path := gstr.search(hit['result']['path']):
                         stripper = path.group()
@@ -188,10 +187,21 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
 
 
 @log_args(max_chars=-1)
-def is_title_mismatched(words: List[str], full_title: str, max_err: int) -> bool:
-    mismatch = [word for word in words if word.lower() not in full_title.lower().split()]
+def is_title_mismatched(title: str, song: str, artist: str, g_song: str, g_artist: str, max_err: int) -> bool:
+    g_title = f"{g_song} by {g_artist}".lower()
+    mismatch = [word for word in title.split() if word.lower() not in g_title.split()]
     logging.debug(f"broke on {mismatch}")
-    return len(mismatch) > max_err
+
+    mismatched = len(mismatch) > max_err
+
+    # handle discord cases where single word song, artist so max_err is 1
+    # TODO: update tests
+    if not len(g_title.split()) == 3:
+        # check for artist same but song different false positive
+        if not mismatched and artist.split() in g_artist.split():
+            mismatched = song.split() in g_song.split()
+
+    return mismatched
 
 
 def create_issue(song: str, artist: str, version: str, stripper: str = 'not supported yet') -> JSONDict:
@@ -510,8 +520,8 @@ def delete_line():
 @limiter.exempt  # disable limiter for firehose
 def github_webhook():
     """
-    `github_webhook` function handles all notification from GitHub relating to the org. Documentation for the webhooks can
-    be found at https://developer.github.com/webhooks/
+    `github_webhook` function handles all notification from GitHub relating to the org. Documentation for the webhooks
+    can be found at https://developer.github.com/webhooks/
     """
     if request.method != 'POST':
         return 'OK'
