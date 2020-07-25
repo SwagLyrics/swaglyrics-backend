@@ -15,6 +15,7 @@ from flask_sqlalchemy import SQLAlchemy
 from requests.auth import HTTPBasicAuth
 from swaglyrics import __version__
 from swaglyrics.cli import stripper, spc
+from unidecode import unidecode
 
 from swaglyrics_backend.utils import request_from_github, validate_request, get_jwt, get_installation_access_token, \
     log_args
@@ -430,8 +431,8 @@ def update():
         return 'Issue already exists on the GitHub repo. \n' \
                'https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues'
 
-    # check if song, artist trivial (all letters and spaces)
-    if re.fullmatch(asrg, song) and re.fullmatch(asrg, artist):
+    # check if song, artist trivial (all letters, spaces and common symbols)
+    if re.fullmatch(asrg, unidecode(f"{song} {artist}")):
         return f'Lyrics for {song} by {artist} may not exist on Genius.\n' + gh_issue_text
 
     # check if song exists on spotify and does not have lyrics on genius

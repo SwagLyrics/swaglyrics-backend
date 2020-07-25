@@ -550,15 +550,15 @@ class TestIssueMaker(TestBase):
             limiter.enabled = False  # disable rate limiting
             generate_fake_unsupported()
             resp = c.post('/unsupported', data={'version': '1.2.0',
-                                                'song': "Avatar's Love",  # once trivial algo is better this will fail
+                                                'song': "Avatar's Love (braces not trivial)",
                                                 'artist': 'Rachel Clinton'})
 
         with open('unsupported.txt') as f:
             data = f.readlines()
 
-        assert "Avatar's Love by Rachel Clinton\n" in data
+        assert "Avatar's Love (braces not trivial) by Rachel Clinton\n" in data
         assert resp.data == b"Lyrics for that song may not exist on Genius. Created issue on the GitHub repo for " \
-                            b"Avatar's Love by Rachel Clinton to investigate further. " \
+                            b"Avatar's Love (braces not trivial) by Rachel Clinton to investigate further. " \
                             b"\nhttps://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues/2443"
 
     @patch('swaglyrics_backend.issue_maker.check_song', return_value=True)
@@ -575,13 +575,13 @@ class TestIssueMaker(TestBase):
             limiter.enabled = False  # disable rate limiting
             generate_fake_unsupported()
             resp = c.post('/unsupported', data={'version': '1.2.0',
-                                                'song': "purple.laces",  # once trivial algo is better this will fail
+                                                'song': "purple.laces [string%@*]",
                                                 'artist': 'lost spaces'})
         with open('unsupported.txt') as f:
             data = f.readlines()
 
-        assert "purple.laces by lost spaces\n" in data
-        assert resp.data == b"Logged purple.laces by lost spaces in the server."
+        assert "purple.laces [string%@*] by lost spaces\n" in data
+        assert resp.data == b"Logged purple.laces [string%@*] by lost spaces in the server."
 
     @patch('swaglyrics_backend.issue_maker.check_song', return_value=False)  # cuz fishy
     @patch('swaglyrics_backend.issue_maker.check_stripper', return_value=False)
