@@ -59,6 +59,7 @@ aug = re.compile(r'(\([^)]*\)|- .*)')  # remove braces and included text and tex
 
 # webhook regex
 wdt = re.compile(r'(.+) by (.+) unsupported.')
+stp = re.compile(r'!(\w+)\s+([\w\d-]+)')  # stripper regex
 
 # artist and song regex
 asrg = re.compile(r"[A-Za-z\s.,;']+")
@@ -287,6 +288,12 @@ def check_stripper(song: str, artist: str) -> bool:
     return r.status_code == requests.codes.ok
 
 
+def add_stripper_to_db(song: str, artist: str, stripper: str) -> None:
+    lyrics = Lyrics(song=song, artist=artist, stripper=stripper)
+    db.session.add(lyrics)
+    db.session.commit()
+
+
 def del_line(song: str, artist: str) -> int:
     # delete song and artist from unsupported.txt
     with open('unsupported.txt', 'r') as f:
@@ -479,9 +486,7 @@ def add_stripper():
     song = request.form['song']
     artist = request.form['artist']
     stripper = request.form['stripper']
-    lyrics = Lyrics(song=song, artist=artist, stripper=stripper)
-    db.session.add(lyrics)
-    db.session.commit()
+    add_stripper_to_db(song, artist, stripper)
     cnt = del_line(song, artist)
     return f"Added stripper for {song} by {artist} to server database successfully, deleted {cnt} instances from " \
            "unsupported.txt"
@@ -526,7 +531,6 @@ def github_webhook():
         if event == "ping":
             return json.dumps({'msg': 'pong'})
 
-        #
         elif event == "issues":
             try:
                 label = payload['issue']['labels'][0]['name']
@@ -543,11 +547,25 @@ def github_webhook():
             if payload['action'] == 'closed' and label == 'unsupported song' and repo == 'SwagLyrics-For-Spotify':
                 title = payload['issue']['title']
                 title = wdt.match(title)
-                song = title.group(1)
-                artist = title.group(2)
+                song, artist = title.groups()
                 logging.info(f'{song} by {artist} is to be deleted.')
                 cnt = del_line(song, artist)
                 return f'Deleted {cnt} instances from unsupported.txt'
+
+        elif event == "issue_comment":
+            # process comment commands
+            if payload['action'] != "created" and payload['repository']['name'] != 'SwagLyrics-For-Spotify':
+                return json.dumps({'msg': 'Not relevant issue comment create; ignoring'})
+
+            comment = payload['comment']
+            if comment['user']['id'] == 27063113 and comment['author_association'] == 'MEMBER':  # id of @aadibajpai
+                if body := stp.match(comment['body']):
+                    cmd, stripper = body.groups()
+                    if cmd == "add":
+                        title = wdt.match(payload['issue']['title'])
+                        song, artist = title.groups()
+                        add_stripper_to_db(song, artist, stripper)
+                        return f"Added {stripper=} for {song} by {artist} to db successfully"
 
         else:
             return json.dumps({'msg': 'Wrong event type'})
