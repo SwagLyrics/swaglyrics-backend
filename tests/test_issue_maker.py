@@ -244,6 +244,8 @@ class TestIssueMaker(TestBase):
         fake_json['response']['hits'][0]['result']['path'] = "/Caravan-palace-miracle-annotated"  # no lyrics at end
         # adjust titles so none match
         fake_json['response']['hits'][1]['result']["full_title"] = "fake title"
+        fake_json['response']['hits'][1]['result']["name"] = "fake song"
+        fake_json['response']['hits'][1]['result']["primary_artist"]["name"] = "fake name"
         fake_json['response']['hits'][4]['result']["full_title"] = "fake title"
         fake_json['response']['hits'][5]['result']["full_title"] = "fake title"
 
@@ -263,15 +265,18 @@ class TestIssueMaker(TestBase):
 
     def test_that_title_mismatches(self):
         from swaglyrics_backend.issue_maker import is_title_mismatched
-        assert is_title_mismatched(["Bohemian", "Rhapsody", "by", "Queen"], "Miracle by Caravan Palace", 2)
+        assert is_title_mismatched("Bohemian Rhapsody by Queen", "Miracle", "Caravan Palace", "Miracle",
+                                   "Caravan Palace", 2)
 
     def test_that_title_not_mismatches(self):
         from swaglyrics_backend.issue_maker import is_title_mismatched
-        assert not is_title_mismatched(["Bohemian", "Rhapsody", "by", "Queen"], "bohemian rhapsody by queen", 2)
+        assert not is_title_mismatched("Bohemian Rhapsody by Queen", "bohemian rhapsody", "queen", "Bohemian Rhapsody",
+                                       "Queen", 2)
 
     def test_that_title_not_mismatches_with_one_error(self):
         from swaglyrics_backend.issue_maker import is_title_mismatched
-        assert not is_title_mismatched(["BoHemIaN", "RhaPsoDy", "2011", "bY", "queen"], "bohemian RHAPSODY By QUEEN", 2)
+        assert not is_title_mismatched("Bohemian Rhapsody by Queen", "bohemian RHAPSODY", "QUEEN", "Bohemian Rhapsody",
+                                       "Queen", 2)
 
     @patch('swaglyrics_backend.issue_maker.get_github_token', return_value='fake token')
     @patch('swaglyrics_backend.issue_maker.requests.post')

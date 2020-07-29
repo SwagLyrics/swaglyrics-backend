@@ -54,7 +54,7 @@
           "id": 4317921,
           "lyrics_owner_id": 7918137,
           "lyrics_state": "complete",
-          "path": "/Caravan-palace-miracle-traduction-francaise-lyrics",
+          "path": "/Caravan-palace-miracle-traduction-francaise-aaaaafake",
           "pyongs_count": null,
           "song_art_image_thumbnail_url": "https://images.genius.com/ca9236bb9c4f5bd7065c3b9b8684aea5.300x300x1.jpg",
           "song_art_image_url": "https://images.genius.com/ca9236bb9c4f5bd7065c3b9b8684aea5.1000x1000x1.jpg",
@@ -192,13 +192,13 @@
         "result": {
           "annotation_count": 1,
           "api_path": "/songs/1259613",
-          "full_title": "Caravan by Utopia",
+          "full_title": "Not Caravan by Utopia",
           "header_image_thumbnail_url": "https://images.genius.com/f7e576e0d12167b15d3f51ba1fc33e2d.300x300x1.jpg",
           "header_image_url": "https://images.genius.com/f7e576e0d12167b15d3f51ba1fc33e2d.1000x1000x1.jpg",
           "id": 1259613,
           "lyrics_owner_id": 5593635,
           "lyrics_state": "complete",
-          "path": "/Utopia-caravan-lyrics",
+          "path": "/Utopia-caravan-annotated",
           "pyongs_count": null,
           "song_art_image_thumbnail_url": "https://images.genius.com/f7e576e0d12167b15d3f51ba1fc33e2d.300x300x1.jpg",
           "song_art_image_url": "https://images.genius.com/f7e576e0d12167b15d3f51ba1fc33e2d.1000x1000x1.jpg",
@@ -206,7 +206,7 @@
             "unreviewed_annotations": 0,
             "hot": false
           },
-          "title": "Caravan",
+          "title": "Not Caravan",
           "title_with_featured": "Caravan",
           "url": "https://genius.com/Utopia-caravan-lyrics",
           "primary_artist": {
