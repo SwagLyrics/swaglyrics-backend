@@ -594,6 +594,6 @@ class TestIssueMaker(TestBase):
                                                 'song': "evbiurevbiuprvb",  # fake issue spam
                                                 'artist': 'bla$bla%bla'})  # special characters to trip the trivial case
 
-        assert resp.data == b"That's a fishy request, that song doesn't seem to exist on Spotify. " \
+        assert resp.data == b"That song doesn't seem to exist on Spotify or is instrumental. " \
                             b"\nIf you feel there's an error, open a ticket at " \
                             b"https://github.com/SwagLyrics/SwagLyrics-For-Spotify/issues"

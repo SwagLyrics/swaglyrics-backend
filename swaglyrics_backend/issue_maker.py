@@ -191,7 +191,7 @@ def genius_stripper(song: str, artist: str) -> Optional[str]:
 
 @log_args(max_chars=-1)
 def is_title_mismatched(words: List[str], full_title: str, max_err: int) -> bool:
-    mismatch = [word for word in words if word.lower() not in full_title.lower()]
+    mismatch = [word for word in words if word.lower() not in full_title.lower().split()]
     logging.debug(f"broke on {mismatch}")
     return len(mismatch) > max_err
 
@@ -457,7 +457,7 @@ def update():
         else:
             return f'Logged {song} by {artist} in the server.'
 
-    return "That's a fishy request, that song doesn't seem to exist on Spotify. \n" + gh_issue_text
+    return "That song doesn't seem to exist on Spotify or is instrumental. \n" + gh_issue_text
 
 
 @app.route("/stripper", methods=["GET", "POST"])
